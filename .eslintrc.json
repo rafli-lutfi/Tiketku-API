@@ -1,0 +1,51 @@
+{
+    "env": {
+        "browser": true,
+        "node": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "overrides": [],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "indent": [
+            "error",
+            "tab"
+        ],
+        "linebreak-style": [
+            "error",
+            "windows"
+        ],
+        "quotes": [
+            "error",
+            "double"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-duplicate-imports": [
+            "warn"
+        ],
+        "no-unreachable": [
+            "warn"
+        ],
+        "no-unused-vars": [
+            "error"
+        ],
+        "no-var": [
+            "warn"
+        ],
+        "camelcase": [
+            "error",
+            {
+                "ignoreDestructuring": true,
+                "ignoreImports": true,
+                "ignoreGlobals": true
+            }
+        ]
+    }
+}
