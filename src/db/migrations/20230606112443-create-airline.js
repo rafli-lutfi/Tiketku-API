@@ -10,9 +10,11 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       airline_iata: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       logo: {

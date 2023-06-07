@@ -17,10 +17,11 @@ module.exports = (sequelize, DataTypes) => {
   Passenger.init({
     order_id: DataTypes.INTEGER,
     fullname: DataTypes.STRING,
-    gender: DataTypes.STRING,
+    age_group: DataTypes.STRING,
+    title: DataTypes.STRING,
     birthdate: DataTypes.DATE,
     nationality: DataTypes.STRING,
-    no_ktp: DataTypes.STRING,
+    ktp: DataTypes.STRING,
     seat_number: DataTypes.STRING
   }, {
     sequelize,

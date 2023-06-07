@@ -9,25 +9,40 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      id_order: {
-        type: Sequelize.INTEGER
+      order_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "Orders",
+          key: "id",
+          as: "id_ord"
+        }
       },
       fullname: {
+        allowNull: false,
         type: Sequelize.STRING
       },
-      gender: {
+      age_group: {
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
+      title: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       birthdate: {
+        allowNull: false,
         type: Sequelize.DATE
       },
       nationality: {
+        allowNull: false,
         type: Sequelize.STRING
       },
-      no_ktp: {
+      ktp: {
         type: Sequelize.STRING
       },
       seat_number: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {
