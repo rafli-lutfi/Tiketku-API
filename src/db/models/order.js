@@ -11,10 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Order.hasOne(models.User, {as: "buyer", foreignKey: "user_id"})
+      Order.belongsTo(models.User, {as: "buyer", foreignKey: "user_id"})
       Order.belongsTo(models.Flight, {as: "flight", foreignKey: "flight_id"})
-      Order.hasOne(models.Price, {as: "price", foreignKey: "price_id"})
-      Order.hasOne(models.Payment, {as: "payment", foreignKey:"payment_id"})
+      Order.belongsTo(models.Price, {as: "price", foreignKey: "price_id"})
+      Order.belongsTo(models.Payment, {as: "payment", foreignKey:"payment_id"})
       Order.hasMany(models.Passenger, {as: "passengers", foreignKey: "order_id"})
     }
   }
