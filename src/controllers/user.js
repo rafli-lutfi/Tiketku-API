@@ -9,7 +9,7 @@ module.exports = {
             if (!user) {
                 return res.status(404).json({
                     status: false,
-                    message: 'email or password is not correct!',
+                    message: 'Alamat email tidak terdaftar!',
                     data: null
                 });
             }
@@ -18,7 +18,7 @@ module.exports = {
             if (!passwordCorrect) {
                 return res.status(404).json({
                     status: false,
-                    message: 'email or password is not correct!',
+                    message: 'Maaf, kata sandi salah',
                     data: null
                 });
             }
