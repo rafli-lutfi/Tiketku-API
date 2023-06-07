@@ -10,15 +10,19 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       city: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       country: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       airport_iata: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {

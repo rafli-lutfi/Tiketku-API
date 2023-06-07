@@ -10,18 +10,27 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       flight_id: {
-        type: Sequelize.INTEGER
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "Flights",
+          key: "id",
+          as: "flight_id"
+        }
       },
       seat_type: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       price: {
+        allowNull: false,
         type: Sequelize.DOUBLE
       },
       discount: {
         type: Sequelize.DOUBLE
       },
       tax: {
+        allowNull: false,
         type: Sequelize.DOUBLE
       },
       createdAt: {

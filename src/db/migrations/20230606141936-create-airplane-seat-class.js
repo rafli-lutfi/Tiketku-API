@@ -10,12 +10,20 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       airplane_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Airplanes",
+          key: "id",
+          as: "airplane_id"
+        }
       },
       type: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       seat_number: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {
