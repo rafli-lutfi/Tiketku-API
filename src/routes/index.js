@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const user = require("./user");
 
 router.post("/test", (req, res) => {
 	const {name} = req.body;
@@ -8,5 +9,8 @@ router.post("/test", (req, res) => {
 		data: null
 	});
 });
+
+router.use("/auth", user);
+
 
 module.exports = router;
