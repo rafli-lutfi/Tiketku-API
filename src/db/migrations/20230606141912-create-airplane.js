@@ -19,10 +19,11 @@ module.exports = {
         }
       },
       model: {
-        type: Sequelize.STRING,
         allowNull: false,
+        type: Sequelize.STRING,
       },
       capacity: {
+        allowNull: false,
         type: Sequelize.INTEGER
       },
       createdAt: {
