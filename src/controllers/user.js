@@ -1,7 +1,8 @@
 /* eslint-disable no-useless-catch */
 const {User} = require("../db/models");
 const bcrypt = require("bcrypt"); 
-const jwt = requier("jsonwebtoken");
+const jwt = require("jsonwebtoken");
+const {JWT_SECRET_KEY} = process.env;
 
 module.exports = {	
 	register: async (req, res, next) => {
@@ -39,44 +40,44 @@ module.exports = {
 	},
 
 	login: async (req, res, next) => {
-        try {
-            const {email, password} = req.body;
+		try {
+			const {email, password} = req.body;
 
-            const user = await User.findOne({where: {email}});
-            if (!user) {
-                return res.status(400).json({
-                    status: false,
-                    message: "Alamat email tidak terdaftar!",
-                    data: null
-                });
-            }
+			const user = await User.findOne({where: {email}});
+			if (!user) {
+				return res.status(400).json({
+					status: false,
+					message: "Alamat email tidak terdaftar!",
+					data: null
+				});
+			}
 
-            const passwordCorrect = await bcrypt.compare(password, user.password);
-            if (!passwordCorrect) {
-                return res.status(400).json({
-                    status: false,
-                    message: "Maaf, kata sandi salah",
-                    data: null
-                });
-            }
+			const passwordCorrect = await bcrypt.compare(password, user.password);
+			if (!passwordCorrect) {
+				return res.status(400).json({
+					status: false,
+					message: "Maaf, kata sandi salah",
+					data: null
+				});
+			}
 
-            const payload = {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            };
+			const payload = {
+				id: user.id,
+				name: user.name,
+				email: user.email
+			};
 
-            const token =  jwt.sign(payload, JWT_SECRET_KEY);
-            return res.status(200).json({
-                status: true,
-                message: "success!",
-                data: {
-                    token: token
-                }
-            });
+			const token =  jwt.sign(payload, JWT_SECRET_KEY);
+			return res.status(200).json({
+				status: true,
+				message: "success!",
+				data: {
+					token: token
+				}
+			});
 
-        } catch (err) {
-            next(err);
-        }
-    }
-}
+		} catch (err) {
+			next(err);
+		}
+	}
+};
