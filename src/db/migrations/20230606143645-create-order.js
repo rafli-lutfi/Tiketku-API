@@ -27,17 +27,7 @@ module.exports = {
           as: "flight_id"
         }
       },
-      price_id: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {
-          model: "Prices",
-          key: "id",
-          as: "price_id"
-        }
-      },
       payment_id: {
-        allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: "Payments",
@@ -56,6 +46,10 @@ module.exports = {
       total_price: {
         allowNull: false,
         type: Sequelize.DOUBLE
+      },
+      tax: {
+        allowNull: false,
+        type: Sequelize.DOUBLE,
       },
       status: {
         allowNull: false,

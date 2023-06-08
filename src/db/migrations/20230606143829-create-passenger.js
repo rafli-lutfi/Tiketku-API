@@ -15,7 +15,7 @@ module.exports = {
         references: {
           model: "Orders",
           key: "id",
-          as: "id_ord"
+          as: "order_id"
         }
       },
       fullname: {

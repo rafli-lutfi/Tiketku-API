@@ -18,7 +18,7 @@ module.exports = {
           as: "airplane_id"
         }
       },
-      type: {
+      seat_type: {
         allowNull: false,
         type: Sequelize.STRING
       },

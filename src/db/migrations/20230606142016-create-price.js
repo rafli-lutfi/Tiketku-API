@@ -29,10 +29,6 @@ module.exports = {
       discount: {
         type: Sequelize.DOUBLE
       },
-      tax: {
-        allowNull: false,
-        type: Sequelize.DOUBLE
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

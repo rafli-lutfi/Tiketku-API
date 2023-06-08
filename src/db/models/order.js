@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Order.belongsTo(models.User, {as: "buyer", foreignKey: "user_id"})
       Order.belongsTo(models.Flight, {as: "flight", foreignKey: "flight_id"})
-      Order.belongsTo(models.Price, {as: "price", foreignKey: "price_id"})
       Order.belongsTo(models.Payment, {as: "payment", foreignKey:"payment_id"})
       Order.hasMany(models.Passenger, {as: "passengers", foreignKey: "order_id"})
     }
@@ -26,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     booking_code: DataTypes.STRING,
     total_passengers: DataTypes.INTEGER,
     total_price: DataTypes.DOUBLE,
+    tax: DataTypes.DOUBLE,
     status: DataTypes.STRING,
     paid_before: DataTypes.DATE
   }, {
