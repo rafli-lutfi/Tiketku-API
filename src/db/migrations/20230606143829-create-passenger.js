@@ -32,7 +32,7 @@ module.exports = {
       },
       birthdate: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
       },
       nationality: {
         allowNull: false,
