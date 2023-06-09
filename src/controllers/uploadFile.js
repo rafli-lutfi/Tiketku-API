@@ -9,7 +9,7 @@ module.exports = {
 		try {
 			const user = req.user;
 			
-			if(req.get("Content-Type") != "multipart/form-data") {
+			if(!req.get("Content-Type").includes("multipart/form-data")) {
 				return next();
 			}
 

@@ -1,11 +1,10 @@
 const router = require("express").Router();
 const user = require("./user");
 
-router.post("/test", (req, res) => {
-	const {name} = req.body;
+router.get("/", (req, res) => {
 	res.status(200).json({
 		status: true,
-		message: `welcome ${name} to tiketku-API`,
+		message: "welcome to tiketku-API",
 		data: null
 	});
 });
