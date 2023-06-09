@@ -2,27 +2,14 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('AirplaneSeatClasses', {
+    await queryInterface.createTable('Roles', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      airplane_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Airplanes",
-          key: "id",
-          as: "airplane_id"
-        }
-      },
-      seat_type: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      seat_number: {
+      name: {
         allowNull: false,
         type: Sequelize.STRING
       },
@@ -37,6 +24,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('AirplaneSeatClasses');
+    await queryInterface.dropTable('Roles');
   }
 };

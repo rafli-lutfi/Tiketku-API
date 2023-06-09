@@ -10,7 +10,7 @@ router.post("/test", (req, res) => {
 	});
 });
 
-router.use("/auth", user);
+router.use(user);
 
 
 module.exports = router;
