@@ -35,14 +35,6 @@
         ],
         "no-var": [
             "warn"
-        ],
-        "camelcase": [
-            "error",
-            {
-                "ignoreDestructuring": true,
-                "ignoreImports": true,
-                "ignoreGlobals": true
-            }
         ]
     }
 }
