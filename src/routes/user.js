@@ -8,7 +8,7 @@ const uploadFile = require("../controllers/uploadFile");
 router.post("/auth/register", user.register);
 router.post("/auth/login", user.login);
 
-router.post("/user/updateProfile", jwt.authenticate, multer().single("media"), uploadFile.uploadAvatar, user.updateProfile);
+router.put("/user/updateProfile", jwt.authenticate, multer().single("media"), uploadFile.uploadAvatar, user.updateProfile);
 
 module.exports = router;
 
