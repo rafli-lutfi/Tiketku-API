@@ -26,6 +26,7 @@ module.exports = {
 					id : decoded.id,
 					fullname: decoded.fullname,
 					email: decoded.email,
+					role: decoded.role
 				};
 
 				next();

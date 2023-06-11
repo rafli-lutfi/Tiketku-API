@@ -13,4 +13,16 @@ module.exports = {
 			console.error(error);
 		}
 	},
+	sendForgotPassword: (data) => {
+		// eslint-disable-next-line no-async-promise-executor
+		return new Promise (async (resolve, reject) => {
+			try {
+				const templateEmail = await ejs.renderFile(path.join(templateDirectory, "forgotPassword.ejs"), data);
+				await nodemailer.sendMail(data.email, "Forgot Password", templateEmail);
+				return resolve();
+			} catch (error) {
+				return reject(error);
+			}
+		});
+	}
 };

@@ -73,7 +73,14 @@ module.exports = {
 				});
 			}
 
-			const user = await User.findOne({where: {email}});
+			const user = await User.findOne({
+				where: {email}, 
+				include: {
+					model: Role,
+					as: "role"				
+				}
+			});
+
 			if (!user) {
 				return res.status(400).json({
 					status: false,
@@ -103,7 +110,8 @@ module.exports = {
 				id: user.id,
 				fullname: user.fullname,
 				email: user.email,
-				phone: user.phone
+				phone: user.phone,
+				role: user.role.name
 			};
 
 			const token =  jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "1d"});
@@ -164,4 +172,30 @@ module.exports = {
 			next(error);
 		}
 	},
+
+	forgotPassword: async (req, res, next) => {
+		try {
+			const {email} = req.body;
+
+			const user = await User.findOne({where: {email}, attributes: {exclude : ["createdAt", "updatedAt"]}});
+			if(user){
+				const payload = {
+					email: user.email
+				};
+				
+				const token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "5m"});
+				const url = `${req.protocol}://${req.get("host")}/user/resetPassword?token=${token}`;
+
+				await mail.sendForgotPassword({email:user.email, url});
+			}
+
+			return res.status(200).json({
+				status: true,
+				message: "we will send a email if the email is registered!",
+				data: null
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 };
