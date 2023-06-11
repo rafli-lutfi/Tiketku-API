@@ -1,6 +1,7 @@
 const {User, Role} = require("../db/models");
 const bcrypt = require("bcrypt"); 
 const jwt = require("jsonwebtoken");
+const mail = require("../utils/mail");
 const {JWT_SECRET_KEY} = process.env;
 
 module.exports = {	
@@ -8,7 +9,7 @@ module.exports = {
 		// regiter user
 		try {
 			const {fullname, email, phone, password} = req.body;
-			const exist = await User.findOne({where: {email}});
+			const exist = await User.findOne({where: {email}, attributes: {exclude: ["createdAt", "updatedAt"]}});
 
 			if(exist) {
 				return res.status(400).json({
@@ -18,7 +19,7 @@ module.exports = {
 				});
 			}
 
-			const roleUser = await Role.findOne({where: {name: "USER"}});
+			const roleUser = await Role.findOne({where: {name: "USER"}, attributes: {exclude: ["createdAt", "updatedAt"]}});
 
 			const defaultAvatar = "https://ik.imagekit.io/tiu0i2v9jz/Tiketku-API/avatar/default-avatar.png";
 
@@ -29,10 +30,21 @@ module.exports = {
 				email, 
 				phone, 
 				password: hashPassword,
-				avatar: defaultAvatar
+				avatar: defaultAvatar,
+				email_verified: false
 			};
 
 			const user = await User.create(userData);
+
+			const payload = {
+				email: user.email
+			};
+			
+			const token = jwt.sign(payload, JWT_SECRET_KEY);
+			const url = `${req.protocol}://${req.get("host")}/register/verifyAccount?token=${token}`;
+
+			mail.sendEmailVerification({fullname: user.fullname, email: user.email, url});
+
 			return res.status(201).json({
 				status: true,
 				messege: "user created!",
@@ -61,11 +73,26 @@ module.exports = {
 				});
 			}
 
-			const user = await User.findOne({where: {email}});
+			const user = await User.findOne({
+				where: {email}, 
+				include: {
+					model: Role,
+					as: "role"				
+				}
+			});
+
 			if (!user) {
 				return res.status(400).json({
 					status: false,
 					message: "invalid credentials!",
+					data: null
+				});
+			}
+
+			if(!user.email_verified){
+				return res.status(400).json({
+					status: false,
+					message: "your account is not verified, please check your email to verify",
 					data: null
 				});
 			}
@@ -83,7 +110,8 @@ module.exports = {
 				id: user.id,
 				fullname: user.fullname,
 				email: user.email,
-				phone: user.phone
+				phone: user.phone,
+				role: user.role.name
 			};
 
 			const token =  jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "1d"});
@@ -139,6 +167,32 @@ module.exports = {
 					phone,
 					avatar
 				}
+			});
+		} catch (error) {
+			next(error);
+		}
+	},
+
+	forgotPassword: async (req, res, next) => {
+		try {
+			const {email} = req.body;
+
+			const user = await User.findOne({where: {email}, attributes: {exclude : ["createdAt", "updatedAt"]}});
+			if(user){
+				const payload = {
+					email: user.email
+				};
+				
+				const token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "5m"});
+				const url = `${req.protocol}://${req.get("host")}/user/resetPassword?token=${token}`;
+
+				await mail.sendForgotPassword({email:user.email, url});
+			}
+
+			return res.status(200).json({
+				status: true,
+				message: "we will send a email if the email is registered!",
+				data: null
 			});
 		} catch (error) {
 			next(error);

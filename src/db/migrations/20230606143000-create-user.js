@@ -37,6 +37,9 @@ module.exports = {
       avatar: {
         type: Sequelize.STRING
       },
+      email_verified: {
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

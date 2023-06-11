@@ -12,15 +12,25 @@ module.exports = {
 				});
 			}
 
-			const data = jwt.verify(token, JWT_SECRET_KEY);
+			jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+				if(err){
+					const message = err.message == "jwt expired" ? "token already expired, please login again" : err.message;
+					return res.status(401).json({
+						status: false, 
+						message: message,
+						data: null
+					});
+				}
 
-			req.user = {
-				id : data.id,
-				fullname: data.fullname,
-				email: data.email,
-			};
+				req.user = {
+					id : decoded.id,
+					fullname: decoded.fullname,
+					email: decoded.email,
+					role: decoded.role
+				};
 
-			next();
+				next();
+			});
 		} catch (error) {
 			next(error);
 		}
