@@ -73,7 +73,14 @@ module.exports = {
 				});
 			}
 
-			const user = await User.findOne({where: {email}});
+			const user = await User.findOne({
+				where: {email}, 
+				include: {
+					model: Role,
+					as: "role"				
+				}
+			});
+
 			if (!user) {
 				return res.status(400).json({
 					status: false,
@@ -103,7 +110,8 @@ module.exports = {
 				id: user.id,
 				fullname: user.fullname,
 				email: user.email,
-				phone: user.phone
+				phone: user.phone,
+				role: user.role.name
 			};
 
 			const token =  jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "1d"});
