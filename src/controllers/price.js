@@ -17,9 +17,9 @@ module.exports = {
 
 	create: async (req, res, next) => {
 		try {
-			const { flight_id, price, discount } = req.body;
+			const { flight_id, seat_type, price, discount } = req.body;
 
-			const harga = await Price.create({ flight_id, price, discount });
+			const harga = await Price.create({ flight_id, seat_type, price, discount });
     
 			return res.status(201).json({
 				status: true,
