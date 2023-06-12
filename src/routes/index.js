@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const user = require("./user");
+const airline = require("./airline");
 
 router.get("/", (req, res) => {
 	res.status(200).json({
@@ -10,6 +11,6 @@ router.get("/", (req, res) => {
 });
 
 router.use(user);
-
+router.use("/airlines", airline);
 
 module.exports = router;
