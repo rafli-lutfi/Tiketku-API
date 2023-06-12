@@ -2,6 +2,7 @@ const {User, Role} = require("../db/models");
 const bcrypt = require("bcrypt"); 
 const jwt = require("jsonwebtoken");
 const mail = require("../utils/mail");
+const otp = require("../utils/otp");
 const {JWT_SECRET_KEY} = process.env;
 
 module.exports = {	
@@ -35,25 +36,24 @@ module.exports = {
 			};
 
 			const user = await User.create(userData);
+			const otpCode = otp.generateOTP();
 
 			const payload = {
-				email: user.email
+				email: user.email,
+				otp: otpCode
 			};
 			
 			const token = jwt.sign(payload, JWT_SECRET_KEY);
 			const url = `${req.protocol}://${req.get("host")}/register/verifyAccount?token=${token}`;
 
-			mail.sendEmailVerification({fullname: user.fullname, email: user.email, url});
+			mail.sendEmailVerification({fullname: user.fullname, email: user.email, otp: otpCode, url});
 
 			return res.status(201).json({
 				status: true,
 				messege: "user created!",
 				data: {
-					id: user.id,
-					fullname: user.fullname,
 					email: user.email,
-					phone: user.phone,
-					avatar: user.avatar,
+					verification_url: url,
 				}
 			});
 		} catch(err){
