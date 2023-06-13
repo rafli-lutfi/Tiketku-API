@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 const {google} = require("googleapis");
 
 const {
@@ -15,4 +16,50 @@ const oauth2Client = new google.auth.OAuth2(
 
 module.exports = {
 	oauth2Client,
+	generateAuthUrl: () => {
+		const scopes = [
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile"
+		];
+
+		return oauth2Client.generateAuthUrl({
+			access_type: "offline",
+			response_type: "code",
+			scope: scopes
+		});
+	},
+
+	setCreadentials: (code) => {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const {tokens} = await oauth2Client.getToken(code);
+				oauth2Client.setCredentials(tokens);
+
+				return resolve(tokens);
+			} catch (err) {
+				return reject(err);
+			}
+		});
+	},
+
+	getUserData: () => {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const oauth2 = google.oauth2({
+					auth: oauth2Client,
+					version: "v2"
+				});
+
+				oauth2.userinfo.get((err, res) => {
+					if (err) {
+						return reject(err);
+					} else {
+						return resolve(res);
+					}
+				});
+			} catch (err) {
+				return reject(err);
+			}
+		});
+	}
 };
