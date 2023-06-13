@@ -6,12 +6,14 @@ const jwt = require("../middlewares/jwtAuth");
 
 router.post("/auth/register", user.register);
 router.post("/auth/login", user.login);
+router.get("/auth/oauth", user.googleOauth2);
+
+router.get("/auth/verifyAccount", otp.verifyAccount);
+router.post("/auth/resetPassword", otp.resetPassword);
 
 router.put("/user/updateProfile", jwt.authenticate, multer().single("media"), uploadFile.uploadAvatar, user.updateProfile);
 router.post("/user/forgotpassword", user.forgotPassword);
 
-router.get("/register/verifyAccount", otp.verifyAccount);
-router.post("/user/resetPassword", otp.resetPassword);
 
 
 

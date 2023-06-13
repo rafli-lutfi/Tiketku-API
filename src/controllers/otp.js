@@ -4,6 +4,44 @@ const {User} = require("../db/models");
 const {JWT_SECRET_KEY} = process.env;
 
 module.exports = {
+	// resendEmailVerfication: async (req, res, next) => {
+	// 	try {
+	// 		const {token} = req.query;
+	// 		if (!token) {
+	// 			return res.status(400).json({
+	// 				status: false,
+	// 				message: "missing token",
+	// 				data: null
+	// 			});
+	// 		}
+
+	// 		const data = jwt.verify(token, JWT_SECRET_KEY);
+
+	// 		const user = await User.findOne({where: {email: data.email}});
+	// 		if(!user){
+	// 			return res.status(200).json({
+	// 				status: true,
+	// 				message: "OTP code has been sent to your email",
+	// 				data: null
+	// 			});
+	// 		}
+
+	// 		if (user.email_verified == true){
+	// 			return res.status(400).json({
+	// 				status: false,
+	// 				message: "user already verify",
+	// 				data: null
+	// 			});
+	// 		}
+
+	// 	} catch (error) {
+	// 		if(error.name == "TokenExpiredError"){
+	// 			return res.status(401).json({});
+	// 		}
+	// 		next(error);
+	// 	}
+	// },
+
 	verifyAccount: async (req, res, next) => {
 		try {
 			const {token} = req.query;
@@ -16,6 +54,13 @@ module.exports = {
 			}
 
 			const data = jwt.verify(token, JWT_SECRET_KEY);
+			if(!data.email || !data.otp){
+				return res.status(401).json({
+					status: false,
+					message: "invalid token",
+					data: null
+				});
+			}
 
 			const user = await User.findOne({where: {email: data.email}});
 
@@ -23,6 +68,23 @@ module.exports = {
 				return res.status(400).json({
 					status: false,
 					message: "user already verify",
+					data: null
+				});
+			}
+
+			const {otp} = req.body;
+			if(!otp) {
+				return res.status(400).json({
+					status: false,
+					message: "missing otp input",
+					data: null
+				});
+			}
+
+			if (otp != data.otp){
+				return res.status(400).json({
+					status: false,
+					message: "invalid otp",
 					data: null
 				});
 			}
@@ -58,10 +120,7 @@ module.exports = {
 				});
 			}
 
-			const data = jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
-				if (err) throw new Error(err.message);
-				return decoded;
-			});
+			const data = jwt.verify(token, JWT_SECRET_KEY);
 
 			const {new_password, confirm_new_password} = req.body;
 			if(!new_password || !confirm_new_password) {
@@ -90,7 +149,7 @@ module.exports = {
 				data: null
 			});
 		} catch (error) {
-			if(error.message == "jwt expired"){
+			if(error.name == "TokenExpiredError"){
 				return res.status(401).json({
 					status: false,
 					message: error.message,
