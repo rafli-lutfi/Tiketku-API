@@ -6,6 +6,8 @@ const jwt = require("../middlewares/jwtAuth");
 
 router.post("/auth/register", user.register);
 router.post("/auth/login", user.login);
+router.get("/auth/oauth", user.googleOauth2);
+
 router.get("/auth/verifyAccount", otp.verifyAccount);
 router.post("/auth/resetPassword", otp.resetPassword);
 
