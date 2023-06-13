@@ -40,6 +40,9 @@ module.exports = {
       email_verified: {
         type: Sequelize.BOOLEAN
       },
+      user_type: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
