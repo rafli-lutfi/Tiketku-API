@@ -33,7 +33,8 @@ module.exports = {
 				phone, 
 				password: hashPassword,
 				avatar: defaultAvatar,
-				email_verified: false
+				email_verified: false,
+				user_type: "basic"
 			};
 
 			const user = await User.create(userData);
@@ -150,7 +151,8 @@ module.exports = {
 				phone: "",
 				password: "",
 				avatar: data.picture,
-				email_verified: data.verified_email
+				email_verified: data.verified_email,
+				user_type: "google",
 			});
 		}
 
