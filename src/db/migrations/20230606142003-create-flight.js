@@ -18,26 +18,30 @@ module.exports = {
           as: "airplane_id"
         }
       },
-      airlane_id: {
-        type: Sequelize.INTEGER
-      },
-      from_airport_id: {
+      departure_airport_id: {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: "Airports",
           key: "id",
-          as: "from_airport_id"
+          as: "departure_airport_id"
         }
       },
-      to_airport_id: {
+      arrival_airport_id: {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: "Airports",
           key: "id",
-          as: "to_airport_id"
+          as: "arrival_airport_id"
         }
+      },
+      flight_number: {
+        type: Sequelize.STRING
+      },
+      price: {
+        allowNull: false,
+        type: Sequelize.DOUBLE
       },
       date: {
         allowNull: false,
@@ -51,7 +55,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-      estimation: {
+      duration: {
         allowNull: false,
         type: Sequelize.TIME
       },
