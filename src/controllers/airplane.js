@@ -19,12 +19,30 @@ module.exports = {
 		try {
 			const { airline_id, model, capacity } = req.body;
 
-			const airplane = await Airplane.create({ airline_id, model, capacity });
+		
+			if(!airline_id || !model || !capacity){
+				return res.status(400).json({
+					status: false,
+					message: "missing body request",
+					data: null
+				});
+			}
+			const checkPlane = await Airplane.findOne({where: {airline_id}});
+			if (checkPlane){
+				return res.status(400).json({
+					status: false, 
+					message: "airplane already exist",
+					data: null
+				});
+			}
+			const newPlane = await Airplane.create({ airline_id, model, capacity });
+
+			
     
 			return res.status(201).json({
 				status: true,
 				message: "Airplane created ",
-				data: airplane
+				data: newPlane
 			});
 		} catch (error) {
 			next(error);
