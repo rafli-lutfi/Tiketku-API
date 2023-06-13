@@ -22,6 +22,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      code: {
+        type: Sequelize.STRING,
+      },
       capacity: {
         allowNull: false,
         type: Sequelize.INTEGER
