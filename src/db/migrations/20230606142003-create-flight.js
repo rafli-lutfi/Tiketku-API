@@ -18,10 +18,6 @@ module.exports = {
           as: "airplane_id"
         }
       },
-      airline_id: {
-        allowNull: false,
-        type: Sequelize.INTEGER
-      },
       departure_airport_id: {
         allowNull: false,
         type: Sequelize.INTEGER,

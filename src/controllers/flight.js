@@ -1,6 +1,135 @@
-const {Flight, Airplane, Airport} = require("../db/models");
+const {Flight, Airplane, Airport, Airline} = require("../db/models");
+const convert = require("../utils/convert");
 
 module.exports = {
+	search: async (req, res, next) => {
+		try {
+			const {d: departure_airport_iata, a: arrival_airport_iata, date} = req.query;
+			if(!departure_airport_iata || !arrival_airport_iata || !date) {
+				return res.status(400).json({
+					status: false,
+					message: "missing query parameter",
+					data: null
+				});
+			}
+
+			const departureAirport = await Airport.findOne({
+				where: {airport_iata: departure_airport_iata},
+				attributes: ["id"]
+			});
+			if(!departureAirport) {
+				return res.status(400).json({
+					status: false,
+					message: "departure airport not found",
+					data: null
+				});
+			}
+
+			const arrivalAirport = await Airport.findOne({
+				where: {airport_iata: arrival_airport_iata},
+				attributes: ["id"]
+			});
+			if(!arrivalAirport) {
+				return res.status(400).json({
+					status: false,
+					message: "departure airport not found",
+					data: null
+				});
+			}
+
+			const flights = await Flight.findAndCountAll({
+				where: {
+					departure_airport_id: departureAirport.id,
+					arrival_airport_id: arrivalAirport.id,
+					date: date
+				},
+				include: [
+					{
+						model: Airplane,
+						as: "airplane",
+						attributes: {
+							exclude: ["createdAt", "updatedAt"]
+						},
+						include: {
+							model: Airline,
+							as: "airline",
+							attributes: {
+								exclude: ["id", "createdAt", "updatedAt"]
+							}
+						},
+						required: true,
+					},
+					{
+						model: Airport,
+						as: "departure_airport",
+						attributes: {
+							exclude: ["createdAt", "updatedAt"]
+						},
+						required: true,
+					},
+					{
+						model: Airport,
+						as: "arrival_airport",
+						attributes: {
+							exclude: ["createdAt", "updatedAt"]
+						},
+						required: true,
+					},
+				],
+				attributes: {
+					exclude: ["createdAt", "updatedAt"]
+				},
+				order: [
+					["departure_time", "ASC"]
+				]
+			});
+
+			const result = flights.rows.map(flight => {
+				const departure_time = convert.timeWithTimeZone(flight.departure_time);
+				const arrival_time = convert.timeWithTimeZone(flight.arrival_time);
+				const duration = convert.DurationToString(flight.duration);
+				const price = convert.NumberToCurrency(flight.price);
+
+				return {
+					id: flight.id,
+					flight_number: flight.flight_number,
+					price,
+					airplane_model: flight.airplane.model,
+					capacity: flight.airplane.capacity,
+					airline:{
+						name: flight.airplane.airline.name,
+						iata: flight.airplane.airline.airline_iata,
+						logo: flight.airplane.airline.logo
+					},
+					departure_airport: {
+						name: flight.departure_airport.name,
+						city: flight.departure_airport.city,
+						country: flight.departure_airport.country,
+						iata: flight.departure_airport.airport_iata,
+					}, 
+					arrival_airport: {
+						name: flight.arrival_airport.name,
+						city: flight.arrival_airport.city,
+						country: flight.arrival_airport.country,
+						iata: flight.arrival_airport.airport_iata,
+					},
+					date: flight.date,
+					departure_time,
+					arrival_time,
+					duration,
+				};
+			});
+
+			return res.status(200).json({
+				status: true,
+				message: "success search flight",
+				data: result
+			});
+		} catch (error) {
+			next(error);
+		}
+	},
+
 	getAll: async (req, res, next) => {
 		try {
 			const flights = await Flight.findAll({flight: [["id", "ASC"]] });
