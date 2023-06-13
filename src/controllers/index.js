@@ -2,6 +2,8 @@ const user = require("./user");
 const uploadFile = require("./uploadFile");
 const otp = require("./otp");
 const airline = require("./airline");
+const price = require("./price");
+const airplane = require("./airplane");
+const airport = require("./airport");
 
-
-module.exports = { user, uploadFile, otp , airline};
+module.exports = { user, uploadFile, otp , airline, price, airplane, airport};
