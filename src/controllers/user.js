@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mail = require("../utils/mail");
 const otp = require("../utils/otp");
+const oauth = require("../config/oauth");
 const {JWT_SECRET_KEY} = process.env;
 
 module.exports = {	
@@ -126,6 +127,48 @@ module.exports = {
 		} catch (err) {
 			next(err);
 		}
+	},
+
+	googleOauth2: async (req, res) => {
+		const {code} = req.query;
+		if (!code) {
+			const googleLoginUrl = oauth.generateAuthUrl();
+			return res.redirect(googleLoginUrl);
+		}
+
+        
+		await oauth.setCreadentials(code);
+		const {data} = await oauth.getUserData();
+        
+		// return res.json(data);
+		let user = await User.findOne({where: {email: data.email}});
+		if (!user) {
+			user = await User.create({
+				role_id: 3,
+				fullname: data.name,
+				email: data.email,
+				phone: "",
+				password: "",
+				avatar: data.picture,
+				email_verified: data.verified_email
+			});
+		}
+
+
+		const payload = {
+			id: user.id,
+			fullname: user.fullname,
+			email: user.email
+		};
+
+		const token = await jwt.sign(payload, JWT_SECRET_KEY);
+		return res.status(200).json({
+			status: true,
+			message: "login success!",
+			data: {
+				token: token
+			}
+		});
 	},
 
 	updateProfile: async (req, res, next) => {
