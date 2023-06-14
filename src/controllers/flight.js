@@ -4,7 +4,9 @@ const convert = require("../utils/convert");
 module.exports = {
 	search: async (req, res, next) => {
 		try {
-			const {d: departure_airport_city, a: arrival_airport_city, date} = req.query;
+			const {order_by = "departure_time", order_type = "ASC"} = req.query;
+
+			const {departure_airport_city, arrival_airport_city, date} = req.body;
 			if(!departure_airport_city || !arrival_airport_city || !date) {
 				return res.status(400).json({
 					status: false,
@@ -80,7 +82,7 @@ module.exports = {
 					exclude: ["createdAt", "updatedAt"]
 				},
 				order: [
-					["departure_time", "ASC"]
+					[order_by, order_type]
 				]
 			});
 
