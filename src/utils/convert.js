@@ -31,5 +31,9 @@ module.exports = {
 			style: "currency",
 			currency: "IDR"
 		}).format(number);
+	},
+
+	capitalFirstLetter: (string) => {
+		return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 	}
 };

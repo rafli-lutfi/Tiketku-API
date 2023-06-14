@@ -4,8 +4,8 @@ const convert = require("../utils/convert");
 module.exports = {
 	search: async (req, res, next) => {
 		try {
-			const {d: departure_airport_iata, a: arrival_airport_iata, date} = req.query;
-			if(!departure_airport_iata || !arrival_airport_iata || !date) {
+			const {d: departure_airport_city, a: arrival_airport_city, date} = req.query;
+			if(!departure_airport_city || !arrival_airport_city || !date) {
 				return res.status(400).json({
 					status: false,
 					message: "missing query parameter",
@@ -14,7 +14,7 @@ module.exports = {
 			}
 
 			const departureAirport = await Airport.findOne({
-				where: {airport_iata: departure_airport_iata},
+				where: {city: convert.capitalFirstLetter(departure_airport_city)},
 				attributes: ["id"]
 			});
 			if(!departureAirport) {
@@ -26,7 +26,7 @@ module.exports = {
 			}
 
 			const arrivalAirport = await Airport.findOne({
-				where: {airport_iata: arrival_airport_iata},
+				where: {city: convert.capitalFirstLetter(arrival_airport_city)},
 				attributes: ["id"]
 			});
 			if(!arrivalAirport) {
@@ -123,7 +123,10 @@ module.exports = {
 			return res.status(200).json({
 				status: true,
 				message: "success search flight",
-				data: result
+				data: {
+					item_count: flights.count,
+					flights: result
+				}
 			});
 		} catch (error) {
 			next(error);
