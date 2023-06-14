@@ -17,11 +17,11 @@ router.get("/", (req, res) => {
 });
 
 router.use(user);
-router.use("/airlines", airline);
+router.use("/airline", airline);
 router.use("/price", price);
 router.use("/airplane", airplane);
 router.use("/airport", airport);
-router.use("/flights", flight);
+router.use("/flight", flight);
 
 
 
