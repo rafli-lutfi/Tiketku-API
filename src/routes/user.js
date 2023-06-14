@@ -8,7 +8,7 @@ router.post("/auth/register", user.register);
 router.post("/auth/login", user.login);
 router.get("/auth/oauth", user.googleOauth2);
 
-router.post("/auth/verifyAccount", otp.verifyAccount);
+router.post("/register/verifyAccount", otp.verifyAccount);
 router.post("/auth/resetPassword", otp.resetPassword);
 
 router.put("/user/updateProfile", jwt.authenticate, multer().single("media"), uploadFile.uploadAvatar, user.updateProfile);
