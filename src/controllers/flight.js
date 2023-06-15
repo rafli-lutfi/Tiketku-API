@@ -1,16 +1,25 @@
-const {Flight, Airplane, Airport, Airline} = require("../db/models");
+const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price} = require("../db/models");
 const convert = require("../utils/convert");
 
 module.exports = {
 	search: async (req, res, next) => {
 		try {
-			const {d: departure_airport_city, a: arrival_airport_city, date} = req.query;
-			if(!departure_airport_city || !arrival_airport_city || !date) {
+			const {sort_by = "departure_time", sort_type = "ASC"} = req.query;
+
+			const {departure_airport_city, arrival_airport_city, date, seat_class} = req.body;
+			if(!departure_airport_city || !arrival_airport_city || !date || !seat_class) {
 				return res.status(400).json({
 					status: false,
 					message: "missing query parameter",
 					data: null
 				});
+			}
+
+			let sort = [];
+			if(sort_by == "price"){
+				sort = ["prices", sort_by, sort_type];
+			}else{
+				sort =[sort_by, sort_type];
 			}
 
 			const departureAirport = await Airport.findOne({
@@ -37,6 +46,19 @@ module.exports = {
 				});
 			}
 
+			const seatClass = await AirplaneSeatClass.findOne({
+				where: {seat_type: seat_class.toUpperCase()},
+				attributes: ["id"],
+			});
+
+			if (!seatClass) {
+				return res.status(400).json({
+					status: false,
+					message: "seat class not found",
+					data: null
+				});			
+			}
+
 			const flights = await Flight.findAndCountAll({
 				where: {
 					departure_airport_id: departureAirport.id,
@@ -50,13 +72,25 @@ module.exports = {
 						attributes: {
 							exclude: ["createdAt", "updatedAt"]
 						},
-						include: {
-							model: Airline,
-							as: "airline",
-							attributes: {
-								exclude: ["id", "createdAt", "updatedAt"]
-							}
-						},
+						include: [
+							{
+								model: Airline,
+								as: "airline",
+								attributes: {
+									exclude: ["id", "createdAt", "updatedAt"]
+								},
+								required: true,
+							},
+							{
+								model: AirplaneSeatClass,
+								as: "seat_classes",
+								where: {seat_type: seat_class.toUpperCase()},
+								attributes: {
+									exclude: ["id", "createdAt", "updatedAt"]
+								},
+								required: true,
+							},
+						],
 						required: true,
 					},
 					{
@@ -75,27 +109,37 @@ module.exports = {
 						},
 						required: true,
 					},
+					{
+						model: Price,
+						as: "prices",
+						where: {seat_type: seat_class},
+						attributes: ["price"],
+						required: true,
+					}
 				],
 				attributes: {
 					exclude: ["createdAt", "updatedAt"]
 				},
-				order: [
-					["departure_time", "ASC"]
-				]
+				order: [sort]
 			});
 
 			const result = flights.rows.map(flight => {
 				const departure_time = convert.timeWithTimeZone(flight.departure_time);
 				const arrival_time = convert.timeWithTimeZone(flight.arrival_time);
 				const duration = convert.DurationToString(flight.duration);
-				const price = convert.NumberToCurrency(flight.price);
+				const price = convert.NumberToCurrency(flight.prices[0].price);
 
 				return {
 					id: flight.id,
 					flight_number: flight.flight_number,
-					price,
 					airplane_model: flight.airplane.model,
-					capacity: flight.airplane.capacity,
+					info: {
+						price,
+						seat_class: flight.airplane.seat_classes[0].seat_type,
+						total_seat: flight.airplane.seat_classes[0].total_seat,
+						free_baggage: flight.free_baggage,
+						cabin_baggage: flight.cabin_baggage,
+					},
 					airline:{
 						name: flight.airplane.airline.name,
 						iata: flight.airplane.airline.airline_iata,

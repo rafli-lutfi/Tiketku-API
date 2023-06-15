@@ -39,10 +39,6 @@ module.exports = {
       flight_number: {
         type: Sequelize.STRING
       },
-      price: {
-        allowNull: false,
-        type: Sequelize.DOUBLE
-      },
       date: {
         allowNull: false,
         type: Sequelize.DATEONLY
@@ -58,6 +54,12 @@ module.exports = {
       duration: {
         allowNull: false,
         type: Sequelize.TIME
+      },
+      free_baggage: {
+        type: Sequelize.INTEGER,
+      },
+      cabin_baggage: {
+        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,
