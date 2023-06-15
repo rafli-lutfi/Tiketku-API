@@ -22,9 +22,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      seat_number: {
+      total_seat: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

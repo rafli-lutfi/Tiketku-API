@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     birthdate: DataTypes.DATEONLY,
     nationality: DataTypes.STRING,
     ktp: DataTypes.STRING,
-    seat_number: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Passenger',

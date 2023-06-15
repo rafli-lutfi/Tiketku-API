@@ -41,10 +41,6 @@ module.exports = {
       ktp: {
         type: Sequelize.STRING
       },
-      seat_number: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

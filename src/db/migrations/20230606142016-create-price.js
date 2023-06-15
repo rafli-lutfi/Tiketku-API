@@ -20,13 +20,10 @@ module.exports = {
       },
       seat_type: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       price: {
         allowNull: false,
-        type: Sequelize.DOUBLE
-      },
-      discount: {
         type: Sequelize.DOUBLE
       },
       createdAt: {
