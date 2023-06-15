@@ -15,7 +15,7 @@ module.exports = {
         references: {
           model: "Orders",
           key: "id",
-          as: "order_id"
+          as: "order_id",
         }
       },
       fullname: {
@@ -24,7 +24,7 @@ module.exports = {
       },
       age_group: {
         allowNull: false,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       title: {
         allowNull: false,

@@ -6,6 +6,10 @@ module.exports = {
 		return moment(time).tz(TZ).format("HH:mm");
 	},
 
+	dateToDatabaseFormat: (date) => {
+		return moment(date).tz(TZ).format("YYYY-MM-DD HH:mm:ss.SSS ZZ");
+	},
+
 	DurationToString: (duration) => {
 		const parse = duration.split(":");
 		let hour = +parse[0];
