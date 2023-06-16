@@ -1,6 +1,7 @@
 const {Order, Flight} = require("../db/models");
 const moment = require("moment-timezone");
 const crypto = require("crypto");
+const notif = require("../utils/notifications");
 
 module.exports = {
 	getAll: async (req, res, next) => {
@@ -70,6 +71,14 @@ module.exports = {
 				status: "UNPAID",
 				paid_before: moment().tz("Asia/Jakarta").add(15, "minutes").format("HH:mm:ss"),
 			});
+
+			const notifData = [{
+				title: "New Order",
+				description: `there is new order in your account, total price Rp. ${total_price}`,
+				user_id: id
+			}];
+
+			notif.sendNotif(notifData);
 
 			return res.status(201).json({
 				status: true,

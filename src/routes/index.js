@@ -5,6 +5,7 @@ const price = require("./price");
 const airplane = require("./airplane");
 const airport = require("./airport");
 const flight = require("./flight");
+const notif = require("./notification");
 
 
 
@@ -22,7 +23,7 @@ router.use("/price", price);
 router.use("/airplane", airplane);
 router.use("/airport", airport);
 router.use("/flight", flight);
-
+router.use("/notifications", notif);
 
 
 module.exports = router;

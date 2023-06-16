@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       User.hasOne(models.Order, {as: "order_contact", foreignKey: "user_id"})
       User.belongsTo(models.Role, {as: "role", foreignKey: "role_id"})
+      User.hasMany(models.Notification, {as: "notification", foreignKey: "notification_id"})
     }
   }
   User.init({
