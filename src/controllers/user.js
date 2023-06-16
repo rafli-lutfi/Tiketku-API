@@ -261,5 +261,42 @@ module.exports = {
 		} catch (error) {
 			next(error);
 		}
-	}
+	},
+	getDetail: async (req, res, next) => {
+		try {
+			const {id} = req.params;
+			if (!id) {
+				return res.status(400).json({
+					status: false,
+					message: "missing id parameter",
+					data: null
+				});
+			}
+
+			const detailUser = await User.findOne({
+				where: {id}, 
+				attributes: 
+					["fullname", "email", "phone"]
+				,
+				
+				required: true
+			});
+
+			if (!detailUser) {
+				return res.status(400).json({
+					status: false,
+					message: "user not found",
+					data: null
+				});
+			}
+
+			return res.status(200).json({
+				status: true,
+				message: "success get detail user",
+				data: detailUser
+			});
+		} catch (error) {
+			next(error);
+		}
+	},
 };
