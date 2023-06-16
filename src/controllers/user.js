@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const mail = require("../utils/mail");
 const otp = require("../utils/otp");
 const oauth = require("../config/oauth");
+const notif = require("../utils/notifications");
 const {JWT_SECRET_KEY} = process.env;
 
 module.exports = {	
@@ -116,6 +117,14 @@ module.exports = {
 				role: user.role.name
 			};
 
+			const notifData = [{
+				title: "Login activity",
+				description: "there is login activity in your account!",
+				user_id: user.id
+			}];
+
+			notif.sendNotif(notifData);
+
 			const token =  jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "1d"});
 			return res.status(200).json({
 				status: true,
@@ -146,7 +155,7 @@ module.exports = {
 			let user = await User.findOne({where: {email: data.email}});
 			if (!user) {
 				user = await User.create({
-					role_id: 3,
+					role_id: 2,
 					fullname: data.name,
 					email: data.email,
 					avatar: data.picture,
@@ -161,6 +170,14 @@ module.exports = {
 				fullname: user.fullname,
 				email: user.email
 			};
+
+			const notifData = [{
+				title: "Login activity",
+				description: "there is login activity in your account!",
+				user_id: user.id
+			}];
+
+			notif.sendNotif(notifData);
 
 			const token = await jwt.sign(payload, JWT_SECRET_KEY);
 			return res.status(200).json({
@@ -244,5 +261,42 @@ module.exports = {
 		} catch (error) {
 			next(error);
 		}
-	}
+	},
+	getDetail: async (req, res, next) => {
+		try {
+			const {id} = req.params;
+			if (!id) {
+				return res.status(400).json({
+					status: false,
+					message: "missing id parameter",
+					data: null
+				});
+			}
+
+			const detailUser = await User.findOne({
+				where: {id}, 
+				attributes: 
+					["fullname", "email", "phone"]
+				,
+				
+				required: true
+			});
+
+			if (!detailUser) {
+				return res.status(400).json({
+					status: false,
+					message: "user not found",
+					data: null
+				});
+			}
+
+			return res.status(200).json({
+				status: true,
+				message: "success get detail user",
+				data: detailUser
+			});
+		} catch (error) {
+			next(error);
+		}
+	},
 };

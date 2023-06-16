@@ -6,6 +6,7 @@ const airplane = require("./airplane");
 const airport = require("./airport");
 const flight = require("./flight");
 const order = require("./order");
+const notif = require("./notification");
 
 
 
@@ -25,6 +26,7 @@ router.use("/airport", airport);
 router.use("/flight", flight);
 router.use("/order", order);
 
+router.use("/notifications", notif);
 
 
 module.exports = router;

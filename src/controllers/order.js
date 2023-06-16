@@ -1,6 +1,7 @@
 const {Order, Flight, Price, Airport, Airplane, Airline, Passenger, sequelize} = require("../db/models");
 const moment = require("moment-timezone");
 const crypto = require("crypto");
+const notif = require("../utils/notifications");
 const convert = require("../utils/convert");
 
 module.exports = {
@@ -301,6 +302,14 @@ module.exports = {
 					updatedAt: newOrder.updatedAt,
 				};
 			});
+
+			const notifData = [{
+				title: "New Order",
+				description: `there is new order in your account, total price Rp. ${total_price}`,
+				user_id: id
+			}];
+
+			notif.sendNotif(notifData);
 
 			return res.status(201).json({
 				status: true,
