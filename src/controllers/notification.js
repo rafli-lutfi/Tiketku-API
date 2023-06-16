@@ -4,12 +4,13 @@ const {Notification} = require("../db/models");
 module.exports = {
 	index: async (req, res) => {
 		try {
-			const {user_id} = req.query;
-			const notifications = await Notification.findAll({where: {user_id}});
+			const { id: user_id } = req.user;
 
+			const notifications = await Notification.findAll({ where: { user_id } });
+		
 			return res.status(200).json({
 				status: true,
-				message: "success",
+				message: "Success",
 				data: notifications
 			});
 
