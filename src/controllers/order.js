@@ -305,7 +305,7 @@ module.exports = {
 
 			const notifData = [{
 				title: "New Order",
-				description: `there is new order in your account, total price Rp. ${total_price}`,
+				description: `there is new order in your account, total price Rp. ${result.total_price}`,
 				user_id: id
 			}];
 
