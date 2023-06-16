@@ -6,6 +6,14 @@ module.exports = {
 		return moment(time).tz(TZ).format("HH:mm");
 	},
 
+	dateToDatabaseFormat: (date) => {
+		return moment(date).tz(TZ).format("YYYY-MM-DD HH:mm:ss.SSS ZZ");
+	},
+
+	databaseToDateFormat: (date) => {
+		return moment(date).tz(TZ).format("DD MMMM YYYY HH:mm");
+	},
+
 	DurationToString: (duration) => {
 		const parse = duration.split(":");
 		let hour = +parse[0];
@@ -30,7 +38,7 @@ module.exports = {
 		return new Intl.NumberFormat("id", {
 			style: "currency",
 			currency: "IDR"
-		}).format(number);
+		}).format(number).slice(0, -3);
 	},
 
 	capitalFirstLetter: (string) => {

@@ -9,7 +9,16 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
+      order_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "Orders",
+          key: "id",
+          as: "order",
+        }
+      },
+      type: {
         allowNull: false,
         type: Sequelize.STRING
       },

@@ -11,10 +11,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Payment.hasOne(models.Order, {as:"order", foreignKey: "payment_id"})
+      Payment.belongsTo(models.Order, {as:"order", foreignKey: "order_id"})
     }
   }
   Payment.init({
+    order_id: DataTypes.INTEGER,
     name: DataTypes.STRING,
   }, {
     sequelize,

@@ -27,15 +27,11 @@ module.exports = {
           as: "flight_id"
         }
       },
-      payment_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: "Payments",
-          key: "id",
-          as: "payment_id"
-        }
-      },
       booking_code: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      seat_type: {
         allowNull: false,
         type: Sequelize.STRING
       },
