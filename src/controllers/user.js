@@ -56,7 +56,7 @@ module.exports = {
 				messege: "user created!",
 				data: {
 					email: user.email,
-					verification_url: url,
+					token: token,
 				}
 			});
 		} catch(err){
@@ -262,23 +262,21 @@ module.exports = {
 			next(error);
 		}
 	},
+	
 	getDetail: async (req, res, next) => {
 		try {
-			const {id} = req.params;
+			const {id} = req.user;
 			if (!id) {
 				return res.status(400).json({
 					status: false,
-					message: "missing id parameter",
+					message: "missing id user",
 					data: null
 				});
 			}
 
 			const detailUser = await User.findOne({
 				where: {id}, 
-				attributes: 
-					["fullname", "email", "phone"]
-				,
-				
+				attributes: ["fullname", "email", "phone"],
 				required: true
 			});
 
