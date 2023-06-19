@@ -7,6 +7,7 @@ const airport = require("./airport");
 const flight = require("./flight");
 const order = require("./order");
 const notif = require("./notification");
+const payment = require("./payment");
 
 
 
@@ -26,7 +27,8 @@ router.use("/airport", airport);
 router.use("/flight", flight);
 router.use("/order", order);
 
-router.use("/notifications", notif);
+router.use("/notif", notif);
+router.use("/payment", payment);
 
 
 module.exports = router;
