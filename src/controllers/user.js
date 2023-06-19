@@ -242,12 +242,14 @@ module.exports = {
 			const {email} = req.body;
 
 			const user = await User.findOne({where: {email}, attributes: {exclude : ["createdAt", "updatedAt"]}});
+			let token;
+
 			if(user){
 				const payload = {
 					email: user.email
 				};
 				
-				const token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "5m"});
+				token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "10m"});
 				const url = `${req.protocol}://${req.get("host")}/user/resetPassword?token=${token}`;
 
 				await mail.sendForgotPassword({email:user.email, url});
@@ -255,8 +257,10 @@ module.exports = {
 
 			return res.status(200).json({
 				status: true,
-				message: "we will send a email if the email is registered!",
-				data: null
+				message: "we will send an email if the email is registered!",
+				data: {
+					token,
+				}
 			});
 		} catch (error) {
 			next(error);
