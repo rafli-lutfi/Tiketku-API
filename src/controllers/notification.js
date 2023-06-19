@@ -22,9 +22,7 @@ module.exports = {
 			return res.status(200).json({
 				status: true,
 				message: "Success",
-				data: [
-					notifications
-				]
+				data: notifications
 			});
 
 		} catch (error){
@@ -51,7 +49,7 @@ module.exports = {
 		try {
 			const { id: user_id } = req.user;
 
-			const notifications = await Notification.findAll({ 
+			const unRead = await Notification.findAll({ 
 				where: { 
 					user_id, is_read: false
 				},
@@ -66,9 +64,7 @@ module.exports = {
 			return res.status(200).json({
 				status: true,
 				message: "Success",
-				data: [
-					notifications
-				]
+				data: unRead
 			});
 		} catch (error) {
 			next(error);
