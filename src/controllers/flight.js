@@ -1,5 +1,6 @@
 const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price, Order} = require("../db/models");
 const convert = require("../utils/convert");
+const moment = require("moment");
 
 module.exports = {
 	search: async (req, res, next) => {
@@ -11,6 +12,16 @@ module.exports = {
 				return res.status(400).json({
 					status: false,
 					message: "missing query parameter",
+					data: null
+				});
+			}
+
+			const currentDate = moment();
+			const flightDate = moment(date);
+			if (flightDate.isBefore(currentDate, "day")) {
+				return res.status(400).json({
+					status: false,
+					message: "flight date has already passed",
 					data: null
 				});
 			}
