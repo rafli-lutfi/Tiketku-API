@@ -13,6 +13,7 @@ router.post("/auth/resetPassword", otp.resetPassword);
 
 router.put("/user/updateProfile", jwt.authenticate, multer().single("media"), uploadFile.uploadAvatar, user.updateProfile);
 router.post("/user/forgotpassword", user.forgotPassword);
+router.post("/user/resendVerification", otp.resendEmailVerfication);
 router.get("/user/getdetail", jwt.authenticate, user.getDetail);
 
 
