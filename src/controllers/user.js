@@ -46,7 +46,7 @@ module.exports = {
 				otp: otpCode
 			};
 			
-			const token = jwt.sign(payload, JWT_SECRET_KEY);
+			const token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "5m"});
 			const url = `${req.protocol}://${req.get("host")}/register/verifyAccount?token=${token}`;
 
 			mail.sendEmailVerification({fullname: user.fullname, email: user.email, otp: otpCode, url});
