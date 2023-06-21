@@ -1,4 +1,4 @@
-const {Order, Flight, Price, Airport, Airplane, Airline, Passenger, sequelize} = require("../db/models");
+const {Order, Flight, Price, Airport, Airplane, Airline, Passenger, Payment, sequelize} = require("../db/models");
 const moment = require("moment-timezone");
 const crypto = require("crypto");
 const notif = require("../utils/notifications");
@@ -44,12 +44,18 @@ module.exports = {
 			});
 
 			const result = orders.map(order => {
+				let status = order.status;
+				if (order.status == "UNPAID" && convert.databaseToDateFormat(moment()) > convert.databaseToDateFormat(order.paid_before)){
+					Order.update({status: "CANCELED"}, {where: {id: order.id}}).catch(error => next(error));
+					status = "CANCELED";
+				}
 				return {
 					id: order.id,
 					date: order.flight.date,
-					status: order.status,
+					status: status,
 					booking_code: order.code,
 					seat_class: order.seat_type,
+					paid_before: convert.databaseToDateFormat(order.paid_before),
 					price: convert.NumberToCurrency(order.total_price + order.tax),
 					flight_detail: {
 						departure_city: order.flight.departure_airport.city,
@@ -73,9 +79,11 @@ module.exports = {
 
 	getDetail: async (req, res, next) => {
 		try {
+			const {id} = req.user;
 			const {order_id} = req.params;
 			
-			const order = await Order.findByPk(order_id, {
+			const order = await Order.findOne({
+				where: {id: order_id, user_id: id},
 				include: [
 					{
 						model: Flight,
@@ -131,6 +139,26 @@ module.exports = {
 				},
 			});
 
+			if(!order){
+				return res.status(403).json({
+					status: false,
+					message: "order not found, please input the correct id",
+					data: null
+				});
+			}
+
+			let paymentType;
+			if(order.status == "PAID"){
+				const payment = await Payment.findOne({
+					where: {order_id: order.id},
+					attributes: {
+						exclude: ["createdAt", "updatedAt"]
+					}
+				});
+
+				paymentType = payment.type;
+			}
+
 			const price = await Price.findOne({
 				where: {flight_id: order.flight.id, seat_type: order.seat_type},
 			});
@@ -151,6 +179,7 @@ module.exports = {
 			const result = {
 				booking_code: order.booking_code,
 				status: order.status,
+				payment_type: paymentType ? paymentType : undefined,
 				flight_detail:{
 					departure:{
 						airport_name: order.flight.departure_airport.name,
@@ -305,7 +334,7 @@ module.exports = {
 
 			const notifData = [{
 				title: "New Order",
-				description: `there is new order in your account, total price Rp. ${result.total_price}`,
+				description: `there is new order in your account, total price ${result.total_price}`,
 				user_id: id
 			}];
 

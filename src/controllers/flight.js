@@ -1,12 +1,13 @@
-const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price} = require("../db/models");
+const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price, Order} = require("../db/models");
 const convert = require("../utils/convert");
+const moment = require("moment");
 
 module.exports = {
 	search: async (req, res, next) => {
 		try {
 			const {sort_by = "departure_time", sort_type = "ASC"} = req.query;
 
-			const {departure_airport_city, arrival_airport_city, date, seat_class} = req.body;
+			const {departure_airport_city, arrival_airport_city, date, seat_class, adult, child = 0, infant = 0} = req.body;
 			if(!departure_airport_city || !arrival_airport_city || !date || !seat_class) {
 				return res.status(400).json({
 					status: false,
@@ -15,6 +16,17 @@ module.exports = {
 				});
 			}
 
+			const currentDate = moment();
+			const flightDate = moment(date);
+			if (flightDate.isBefore(currentDate, "day")) {
+				return res.status(400).json({
+					status: false,
+					message: "flight date has already passed",
+					data: null
+				});
+			}
+
+			// to sorting data flight purposes
 			let sort = [];
 			if(sort_by == "price"){
 				sort = ["prices", sort_by, sort_type];
@@ -48,7 +60,9 @@ module.exports = {
 
 			const seatClass = await AirplaneSeatClass.findOne({
 				where: {seat_type: seat_class.toUpperCase()},
-				attributes: ["id"],
+				attributes: {
+					exclude: ["createdAt", "updatedAt"]
+				},
 			});
 
 			if (!seatClass) {
@@ -58,6 +72,9 @@ module.exports = {
 					data: null
 				});			
 			}
+
+			// check total seat left
+			const totalPassengers = adult + child + infant;
 
 			const flights = await Flight.findAndCountAll({
 				where: {
@@ -123,7 +140,17 @@ module.exports = {
 				order: [sort]
 			});
 
-			const result = flights.rows.map(flight => {
+			const result = await Promise.all( flights.rows.map( async flight => {
+				const orders = await Order.findAndCountAll({
+					where: {flight_id: flight.id, seat_type: seat_class}
+				});
+
+				// compare total seat left with total passenger in order 
+				const seatLeft = flight.airplane.seat_classes[0].total_seat - orders.count;
+				if (seatLeft <= totalPassengers){
+					return;
+				}
+
 				const departure_time = convert.timeWithTimeZone(flight.departure_time);
 				const arrival_time = convert.timeWithTimeZone(flight.arrival_time);
 				const duration = convert.DurationToString(flight.duration);
@@ -162,14 +189,22 @@ module.exports = {
 					arrival_time,
 					duration,
 				};
-			});
+			}));
+
+			// remove null value from array
+			const filter = result.filter(Boolean);
 
 			return res.status(200).json({
 				status: true,
 				message: "success search flight",
 				data: {
-					item_count: flights.count,
-					flights: result
+					item_count: filter.length,
+					passengers: {
+						adult,
+						child,
+						infant
+					},
+					flights: filter,
 				}
 			});
 		} catch (error) {
