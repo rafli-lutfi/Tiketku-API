@@ -1,4 +1,5 @@
 const {Airport} =require("../db/models");
+const convert = require("../utils/convert");
 
 module.exports = {
 	getAll: async (req, res, next) => {
@@ -45,7 +46,55 @@ module.exports = {
 			next(error);
 		}
 	},
+	getByCity: async (req, res ) => {
+		try {
+			const { city } = req.city;
+			if (!city) {
+				return res.status(400).json({
+					status: false,
+					message: "missing city parameter",
+					data: null
+				});
+			}
+		
+			const byCity = await Airport.findOne({
+				where: { city: convert.capitalFirstLetter(city) },
+				attributes: { exclude: ["createdAt", "updatedAt"] }
+			});
+  
+			if (!byCity) {
+				return res.status(400).json({
+					status: false,
+					message: "Airport not found",
+					data: null
+				});
+			}
+ 
+			return res.status(200).json({
+				status: true,
+				message: "Success",
+				data: byCity
+			});
+			
+		} catch (error) {
+			return res.status(500).json({
+				status: false,
+				message: "Internal server error",
+				data: null
+			});
+		}
+			
+	}
 };
+	
+	
+		
+
+		
+		
+
+		
+
 
 
 
