@@ -46,9 +46,9 @@ module.exports = {
 			next(error);
 		}
 	},
-	getByCity: async (req, res ) => {
+	getByCity: async (req, res, next ) => {
 		try {
-			const { city } = req.city;
+			const { city } = req.body;
 			if (!city) {
 				return res.status(400).json({
 					status: false,
@@ -76,12 +76,9 @@ module.exports = {
 				data: byCity
 			});
 			
-		} catch (error) {
-			return res.status(500).json({
-				status: false,
-				message: "Internal server error",
-				data: null
-			});
+		} catch (error) { 
+			next(error);
+			
 		}
 			
 	}
