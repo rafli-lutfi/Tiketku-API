@@ -84,6 +84,14 @@ module.exports = {
 				}
 			});
 
+			if(user.user_type == "google"){
+				return res.status(400).json({
+					status: false,
+					message: "your account is registered using google, please login with google",
+					data: null
+				});
+			}
+
 			if (!user) {
 				return res.status(400).json({
 					status: false,
@@ -151,7 +159,6 @@ module.exports = {
 			await oauth.setCreadentials(code);
 			const {data} = await oauth.getUserData();
         
-			// return res.json(data);
 			let user = await User.findOne({where: {email: data.email}});
 			if (!user) {
 				user = await User.create({
