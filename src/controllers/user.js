@@ -287,7 +287,7 @@ module.exports = {
 
 			const detailUser = await User.findOne({
 				where: {id}, 
-				attributes: ["fullname", "email", "phone"],
+				attributes: ["fullname", "email", "phone", "avatar"],
 				required: true
 			});
 
