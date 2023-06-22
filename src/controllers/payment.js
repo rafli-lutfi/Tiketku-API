@@ -4,8 +4,7 @@ module.exports = {
 	confirmPayment: async (req,res,next) => {
 		try {
 			const {id : user_id} = req.user;
-			const {order_id} = req.params;
-			const {payment_type} = req.body;
+			const {order_id, payment_type} = req.body;
 
 			if(!payment_type){
 				return res.status(400).json({

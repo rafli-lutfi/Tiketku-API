@@ -2,26 +2,49 @@ const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price, Order} = re
 const convert = require("../utils/convert");
 const moment = require("moment");
 
+const sort_by_list = ["departure_time", "price", "arrival_time", "duration"];
+const sort_type_list = ["ASC", "DESC"];
+
 module.exports = {
 	search: async (req, res, next) => {
 		try {
-			const {sort_by = "departure_time", sort_type = "ASC"} = req.query;
+			let {sort_by = "departure_time", sort_type = "ASC"} = req.query;
+
+			sort_by = sort_by.toLowerCase();
+			sort_type = sort_type.toUpperCase();
+
+			if(!sort_by_list.includes(sort_by) || !sort_type_list.includes(sort_type)){
+				return res.status(400).json({
+					status: false,
+					message: "unrecognized sort_by or sort_type, sort_by can only be departure_time, prices, arrival_time, duration and sort_type can only be asc or desc",
+					data: null
+				});
+			}
 
 			const {departure_airport_city, arrival_airport_city, date, seat_class, adult, child = 0, infant = 0} = req.body;
 			if(!departure_airport_city || !arrival_airport_city || !date || !seat_class) {
 				return res.status(400).json({
 					status: false,
-					message: "missing query parameter",
+					message: "missing request body",
 					data: null
 				});
 			}
 
 			const currentDate = moment();
-			const flightDate = moment(date);
+			const flightDate = moment(`${date} 23:59:59`);
 			if (flightDate.isBefore(currentDate, "day")) {
 				return res.status(400).json({
 					status: false,
 					message: "flight date has already passed",
+					data: null
+				});
+			}
+
+			const totalPassengers = adult + child + infant;
+			if(totalPassengers == 0){
+				return res.status(400).json({
+					status: false, 
+					message: "total passenger cannot be zero",
 					data: null
 				});
 			}
@@ -31,7 +54,7 @@ module.exports = {
 			if(sort_by == "price"){
 				sort = ["prices", sort_by, sort_type];
 			}else{
-				sort =[sort_by, sort_type];
+				sort = [sort_by, sort_type];
 			}
 
 			const departureAirport = await Airport.findOne({
@@ -72,9 +95,6 @@ module.exports = {
 					data: null
 				});			
 			}
-
-			// check total seat left
-			const totalPassengers = adult + child + infant;
 
 			const flights = await Flight.findAndCountAll({
 				where: {

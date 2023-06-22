@@ -205,11 +205,11 @@ module.exports = {
 				},
 				price_detail: {
 					adult_count: adult,
-					child_count: child == 0 ? undefined: child,
-					infant_count: infant == 0 ? undefined: infant,
+					child_count: child == 0 ? null: child,
+					infant_count: infant == 0 ? null: infant,
 					adult_price: convert.NumberToCurrency(adult * price.price),
-					child_price: child == 0 ? undefined : convert.NumberToCurrency(child * price.price),
-					infant_price: infant == 0 ? undefined : convert.NumberToCurrency(child * price.price),
+					child_price: child == 0 ? null : convert.NumberToCurrency(child * price.price),
+					infant_price: infant == 0 ? null : convert.NumberToCurrency(child * price.price),
 					tax: convert.NumberToCurrency(order.tax),
 					total_price: convert.NumberToCurrency(order.total_price + order.tax)
 				}
@@ -245,9 +245,9 @@ module.exports = {
 
 			const totalPassengers = adult + child + infant;
 
-			if (!flight_id || totalPassengers == 0) return res.status(400).json({
+			if (!flight_id || totalPassengers == 0 || !seat_class) return res.status(400).json({
 				status: false,
-				message: "missing query paramater",
+				message: "missing request body",
 				data: null
 			});
 
