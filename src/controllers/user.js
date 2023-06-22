@@ -12,15 +12,6 @@ module.exports = {
 		// regiter user
 		try {
 			const {fullname, email, phone, password} = req.body;
-			const exist = await User.findOne({where: {email}, attributes: {exclude: ["createdAt", "updatedAt"]}});
-
-			if(exist) {
-				return res.status(400).json({
-					status: false,
-					messege: "email already used!",
-					data: null
-				});
-			}
 
 			const roleUser = await Role.findOne({where: {name: "USER"}, attributes: {exclude: ["createdAt", "updatedAt"]}});
 
@@ -66,36 +57,31 @@ module.exports = {
 
 	login: async (req, res, next) => {
 		try {
-			const {email, phone, password} = req.body;
-
-			if (!password && (!email || !phone) ) {
-				return res.status(400).json({
-					status: false,
-					message: "missing body request",
-					data: null
-				});
-			}
+			const {email, password} = req.body;
 
 			const user = await User.findOne({
 				where: {email}, 
 				include: {
 					model: Role,
 					as: "role"				
+				},
+				attributes: {
+					exclude: ["createdAt", "updatedAt"]
 				}
 			});
-
-			if(user.user_type == "google"){
-				return res.status(400).json({
-					status: false,
-					message: "your account is registered using google, please login with google",
-					data: null
-				});
-			}
 
 			if (!user) {
 				return res.status(400).json({
 					status: false,
 					message: "invalid credentials!",
+					data: null
+				});
+			}
+
+			if(user.user_type == "google"){
+				return res.status(400).json({
+					status: false,
+					message: "your account is registered using google, please login with google",
 					data: null
 				});
 			}

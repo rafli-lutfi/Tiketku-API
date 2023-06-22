@@ -1,6 +1,8 @@
 const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price, Order} = require("../db/models");
 const convert = require("../utils/convert");
-const moment = require("moment");
+const moment = require("moment-timezone");
+const {TZ = "Asia/Jakarta"} = process.env; 
+
 
 const sort_by_list = ["departure_time", "price", "arrival_time", "duration"];
 const sort_type_list = ["ASC", "DESC"];
@@ -8,7 +10,8 @@ const sort_type_list = ["ASC", "DESC"];
 module.exports = {
 	search: async (req, res, next) => {
 		try {
-			let {sort_by = "departure_time", sort_type = "ASC"} = req.query;
+			let {sort_by = "departure_time", sort_type = "ASC", page = 1, per_page = 25} = req.query;
+			const offset = (page - 1) * per_page;
 
 			sort_by = sort_by.toLowerCase();
 			sort_type = sort_type.toUpperCase();
@@ -30,9 +33,9 @@ module.exports = {
 				});
 			}
 
-			const currentDate = moment();
-			const flightDate = moment(`${date} 23:59:59`);
-			if (flightDate.isBefore(currentDate, "day")) {
+			const currentDate = moment().tz(TZ);
+			const flightDate = moment(`${date} 23:59:59`).tz(TZ);
+			if (flightDate.isBefore(currentDate)) {
 				return res.status(400).json({
 					status: false,
 					message: "flight date has already passed",
@@ -96,7 +99,7 @@ module.exports = {
 				});			
 			}
 
-			const flights = await Flight.findAndCountAll({
+			const flights = await Flight.findAll({
 				where: {
 					departure_airport_id: departureAirport.id,
 					arrival_airport_id: arrivalAirport.id,
@@ -157,16 +160,18 @@ module.exports = {
 				attributes: {
 					exclude: ["createdAt", "updatedAt"]
 				},
-				order: [sort]
+				order: [sort],
+				limit: per_page,
+				offset: offset,
 			});
 
-			const result = await Promise.all( flights.rows.map( async flight => {
-				const orders = await Order.findAndCountAll({
+			const result = await Promise.all( flights.map( async flight => {
+				const orders = await Order.findAll({
 					where: {flight_id: flight.id, seat_type: seat_class}
 				});
 
 				// compare total seat left with total passenger in order 
-				const seatLeft = flight.airplane.seat_classes[0].total_seat - orders.count;
+				const seatLeft = flight.airplane.seat_classes[0].total_seat - orders.length;
 				if (seatLeft <= totalPassengers){
 					return;
 				}

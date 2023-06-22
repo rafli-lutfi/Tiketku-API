@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    const {prices: rawPrices} = require("./data/data.json")
+    const {prices: rawPrices} = require("./data/June-Dec-2023.json")
 
     const prices = rawPrices.map(price => {
       return {

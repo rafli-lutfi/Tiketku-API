@@ -11,22 +11,6 @@ module.exports = {
 			const {token} = req.query;
 			const {email} = req.body;
 
-			if(!email){
-				return res.status(400).json({
-					status: false,
-					message: "missing request body",
-					data: null
-				});
-			}
-
-			if (!token) {
-				return res.status(400).json({
-					status: false,
-					message: "missing token",
-					data: null
-				});
-			}
-
 			jwt.verify(token, JWT_SECRET_KEY, async (err) => {
 				if(err){
 					if(err.name != "TokenExpiredError"){
@@ -86,13 +70,6 @@ module.exports = {
 	verifyAccount: async (req, res, next) => {
 		try {
 			const {token} = req.query;
-			if (!token) {
-				return res.status(400).json({
-					status: false,
-					message: "missing token",
-					data: null
-				});
-			}
 
 			const data = jwt.verify(token, JWT_SECRET_KEY);
 			if(!data.email || !data.otp){
@@ -160,33 +137,10 @@ module.exports = {
 	resetPassword: async (req, res, next) => {
 		try {
 			const {token} = req.query;
-			if (!token) {
-				return res.status(400).json({
-					status: false,
-					message: "missing token",
-					data: null
-				});
-			}
+			const {new_password, confirm_new_password} = req.body;
 
 			const data = jwt.verify(token, JWT_SECRET_KEY);
-
-			const {new_password, confirm_new_password} = req.body;
-			if(!new_password || !confirm_new_password) {
-				return res.status(400).json({
-					status: false,
-					message: "missing body request",
-					data: null
-				});
-			}
-
-			if(new_password != confirm_new_password) {
-				return res.status(400).json({
-					status: false,
-					message: "confirm password not match!",
-					data: null
-				});
-			}
-
+			
 			const hashPassword = await bcrypt.hash(new_password, 10);
 			
 			await User.update({password: hashPassword}, {where: {email: data.email}});
