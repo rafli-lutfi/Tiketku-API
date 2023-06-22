@@ -69,7 +69,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    });
+    })
+      .then(() => queryInterface.addIndex('Flights', ['departure_airport_id']))
+      .then(() => queryInterface.addIndex('Flights', ['arrival_airport_id']))
+      .then(() => queryInterface.addIndex('Flights', ['date']));
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Flights');
