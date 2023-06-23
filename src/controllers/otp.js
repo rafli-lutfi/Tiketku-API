@@ -137,7 +137,7 @@ module.exports = {
 	resetPassword: async (req, res, next) => {
 		try {
 			const {token} = req.query;
-			const {new_password, confirm_new_password} = req.body;
+			const {new_password} = req.body;
 
 			const data = jwt.verify(token, JWT_SECRET_KEY);
 			
