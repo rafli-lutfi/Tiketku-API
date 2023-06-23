@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-useless-catch */
 const {Notification} = require("../db/models");
 
 module.exports = {
