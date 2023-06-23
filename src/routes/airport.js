@@ -7,7 +7,7 @@ const jwt = require("../middlewares/jwtAuth");
 
 router.get("/", airport.getAll);
 router.post("/", jwt.authenticate, role.hasRole(["ADMIN"]), airport.create);
-router.get("/bycity", airport.getByCity);
+router.post("/search", airport.search);
 router.get("/favorite", airport.favoriteDestination);
 
 module.exports = router;

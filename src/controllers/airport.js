@@ -51,22 +51,22 @@ module.exports = {
 		}
 	},
 
-	getByCity: async (req, res, next ) => {
+	search: async (req, res, next ) => {
 		try {
 			const { city } = req.body;
 			if (!city) {
 				return res.status(400).json({
 					status: false,
-					message: "missing city parameter",
+					message: "missing request body",
 					data: null
 				});
 			}
-		
+
 			const byCity = await Airport.findOne({
 				where: { city: convert.capitalFirstLetter(city) },
 				attributes: { exclude: ["createdAt", "updatedAt"] }
 			});
-  
+
 			if (!byCity) {
 				return res.status(400).json({
 					status: false,
@@ -74,18 +74,16 @@ module.exports = {
 					data: null
 				});
 			}
- 
+
 			return res.status(200).json({
 				status: true,
 				message: "Success",
 				data: byCity
 			});
-			
 		} catch (error) { 
 			next(error);
 			
 		}
-			
 	},
 
 	favoriteDestination: async (req, res, next) => {
