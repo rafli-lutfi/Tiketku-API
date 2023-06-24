@@ -45,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
         name: "flights_date_idx",
         fields: ['date']
       },
+      {
+        name: "flights_departure_time_idx",
+        fields: ['departure_time']
+      },
     ],
   });
   Flight.add

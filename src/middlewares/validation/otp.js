@@ -1,12 +1,11 @@
 const Joi = require("joi");
-const existence = require("./existence");
+const {isEmailVerified} = require("./existence");
 
 const options = {
 	abortEarly: false,
 	allowUnknown: true,
 	stripUnknown: true,
 	errors: {
-		escapeHtml: true,
 		wrap: {
 			label: ""
 		}
@@ -28,14 +27,15 @@ module.exports = {
 		});
 
 		const bodySchema = Joi.object({
-			email: Joi.string().email().required().external(async (value) => {
-				existence.isEmailVerified(value);
-			})
+			email: Joi.string().email().required()
+				.external(async (value) => {
+					return await isEmailVerified(value);
+				})
 		});
 
 		try {
-			await querySchema.validateAsync(req.query, options);
-			await bodySchema.validateAsync(req.body, options);
+			req.query = await querySchema.validateAsync(req.query, options);
+			req.body = await bodySchema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
 			responeError(res, error);
@@ -48,7 +48,7 @@ module.exports = {
 		});
 
 		try {
-			await schema.validateAsync(req.query, options);
+			req.query = await schema.validateAsync(req.query, options);
 			next();
 		} catch (error) {
 			responeError(res, error);
@@ -62,13 +62,14 @@ module.exports = {
 
 		const bodySchema = Joi.object({
 			new_password: Joi.string().min(8).max(30).required(),
-			confirm_new_password: Joi.string().required().valid(Joi.ref("new_password"))
+			confirm_new_password: Joi.string().required()
+				.valid(Joi.ref("new_password"))
 				.messages({"any.only": "password not match!"})
 		});
 
 		try {
-			await querySchema.validateAsync(req.query, options);
-			await bodySchema.validateAsync(req.body, options);
+			req.query = await querySchema.validateAsync(req.query, options);
+			req.body = await bodySchema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
 			responeError(res, error);
