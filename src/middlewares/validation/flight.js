@@ -84,7 +84,7 @@ module.exports = {
 					return await isFlightExist(value);
 				}),
 
-			seat_class: Joi.string().min(1).valid(validSeatClass).required(),
+			seat_class: Joi.string().min(1).valid(...validSeatClass).required(),
 
 			adult: Joi.number().min(1).required(),
 

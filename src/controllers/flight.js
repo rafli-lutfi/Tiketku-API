@@ -237,6 +237,9 @@ module.exports = {
 				});
 			}
 
+			const tax = Math.round((price.price * (adult + child)) * 10/100);
+			const total_price = price.price * (adult + child) + tax;
+
 			const result = {
 				info: {
 					airline_name: price.flight_price.airplane.airline.name,
@@ -264,9 +267,9 @@ module.exports = {
 					child_count: child,
 					child_price: child == 0 ? null : convert.NumberToCurrency(price.price * child),
 					infant_count: infant,
-					infant_price: child == 0 ? null : 0,
-					total_price: convert.NumberToCurrency(price.price * (adult + child)),
-					tax: convert.NumberToCurrency(Math.round(price.price * 10/100))
+					infant_price: child == 0 ? null : convert.NumberToCurrency(0),
+					total_price: convert.NumberToCurrency(total_price),
+					tax: convert.NumberToCurrency(tax),
 				}
 			};
 
