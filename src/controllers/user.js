@@ -188,18 +188,10 @@ module.exports = {
 	updateProfile: async (req, res, next) => {
 		try {
 			const {fullname, email, phone} = req.body;
-			let {avatar} = req.body;
 
+			let avatar;
 			if (req.uploadFile) {
 				avatar = req.uploadFile.imageUrl;
-			}
-
-			if(!fullname && !email && !phone && !avatar) {
-				return res.status(400).json({
-					status: false,
-					message: "missing body request",
-					data: null
-				});
 			}
 
 			const {id: userId} = req.user;

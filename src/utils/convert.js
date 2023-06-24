@@ -7,7 +7,7 @@ module.exports = {
 	},
 
 	dateToDatabaseFormat: (date) => {
-		return moment(date).tz(TZ).format("YYYY-MM-DD HH:mm:ss.SSS ZZ");
+		return moment(date).tz(TZ).format("YYYY-MM-DD HH:mm:ss.SSS");
 	},
 
 	databaseToDateFormat: (date) => {

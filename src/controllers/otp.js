@@ -22,25 +22,7 @@ module.exports = {
 					}
 				}
 
-				const user = await User.findOne({where: {email: email}})
-					.catch(err => {
-						throw err;
-					});
-				if(!user){
-					return res.status(400).json({
-						status: true,
-						message: "you're not registered yet",
-						data: null
-					});
-				}
-
-				if (user.email_verified == true){
-					return res.status(400).json({
-						status: false,
-						message: "user already verify",
-						data: null
-					});
-				}
+				const user = await User.findOne({where: {email: email}});
 
 				const otpCode = otp.generateOTP();
 

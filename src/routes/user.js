@@ -13,7 +13,7 @@ router.get("/auth/oauth", user.googleOauth2);
 router.post("/register/verifyAccount", otpValidation.verifyAccount, otp.verifyAccount);
 router.post("/auth/resetPassword", otpValidation.resetPassword, otp.resetPassword);
 
-router.put("/user/updateProfile", userValidation.updateProfile, jwt.authenticate, multer().single("media"), uploadFile.uploadAvatar, user.updateProfile);
+router.put("/user/updateProfile", multer().single("media"), userValidation.updateProfile, jwt.authenticate,  uploadFile.uploadAvatar, user.updateProfile);
 router.post("/user/forgotpassword", userValidation.forgotPassword, user.forgotPassword);
 router.post("/user/resendVerification", otpValidation.resendEmailVerification, otp.resendEmailVerfication);
 router.get("/user/getdetail", jwt.authenticate, user.getDetail);
