@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const {User, Flight, Airport} = require("../../db/models");
+const {User, Flight, Airport, Order} = require("../../db/models");
 const convert = require("../../utils/convert");
 
 const customErrorJoi = (message, field) => {
@@ -74,6 +74,16 @@ module.exports = {
 
 		if(!arrivalAirport) {
 			customErrorJoi("arrival airport not found", "arrival_airport");
+		}
+	},
+
+	isOrderExist: async (order_id) => {
+		const order = await Order.findOne({
+			where: {id: order_id},
+			attributes: ["id"]
+		});
+		if(!order){
+			customErrorJoi("order not found", "order");
 		}
 	}
 };

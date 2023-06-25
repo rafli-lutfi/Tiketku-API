@@ -1,4 +1,6 @@
 const {Order, Payment, } = require("../db/models");
+const moment = require("moment-timezone");
+const convert = require("../utils/convert");
 
 module.exports = {
 	confirmPayment: async (req,res,next) => {
@@ -6,31 +8,36 @@ module.exports = {
 			const {id : user_id} = req.user;
 			const {order_id, payment_type} = req.body;
 
-			if(!payment_type){
-				return res.status(400).json({
-					status: false,
-					message: "missing request body",
-					data: null
-				});
-			}
-
 			const checkOrder = await Order.findOne({
 				where: {id: order_id, user_id},
 				attributes: {exclude: ["createdAt", "updatedAt"]}
 			});
 
-			if(!checkOrder){
+			// update order if status is UNPAID and order has expired
+			if (checkOrder.status == "UNPAID" && moment().isAfter(convert.databaseToDateFormat(checkOrder.paid_before))){
+				await Order.update({status: "CANCELED"},{
+					where: {id: order_id},
+				});
+
 				return res.status(400).json({
-					status: "false",
-					message: "order not found",
+					status: false,
+					message: "order has expired",
 					data: null
 				});
 			}
 
-			if (checkOrder.status != "UNPAID"){
+			if (checkOrder.status == "PAID"){
 				return res.status(400).json({
 					status: false,
 					message: "order has been paid",
+					data: null
+				});
+			}
+
+			if (checkOrder.status == "CANCELED"){
+				return res.status(400).json({
+					status: false,
+					message: "order has been canceled",
 					data: null
 				});
 			}
