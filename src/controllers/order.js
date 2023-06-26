@@ -176,10 +176,13 @@ module.exports = {
 				};
 			});
 
+			const paid_before = convert.databaseToDateFormat(order.paid_before);
+
 			const result = {
 				booking_code: order.booking_code,
 				status: order.status,
-				payment_type: paymentType ? paymentType : undefined,
+				payment_type: paymentType ? paymentType : null,
+				paid_before: moment().isAfter(paid_before) || order.status != "UNPAID" ? null : paid_before,
 				flight_detail:{
 					departure:{
 						airport_name: order.flight.departure_airport.name,
@@ -231,8 +234,8 @@ module.exports = {
 			const {
 				flight_id, 
 				adult,
-				child = 0,
-				infant = 0,
+				child,
+				infant,
 				passengers,
 				seat_class
 			} = req.body;
@@ -245,15 +248,9 @@ module.exports = {
 
 			const totalPassengers = adult + child + infant;
 
-			if (!flight_id || totalPassengers == 0 || !seat_class) return res.status(400).json({
+			if (passengers.length != totalPassengers) return res.status(400).json({
 				status: false,
-				message: "missing request body",
-				data: null
-			});
-
-			if (passengers.length != totalPassengers - infant) return res.status(400).json({
-				status: false,
-				message: "the number of passenger data filled in isn't the same as the specified number of passengers.",
+				message: `mismatched, total passenger is ${totalPassengers} but total passenger data is ${passengers.length}`,
 				data: null
 			});
 
@@ -275,17 +272,9 @@ module.exports = {
 					]
 				}, {transaction: t});
 
-				if(!flight){
-					return res.status(400).json({
-						status: false,
-						message: "flight not found",
-						data: null
-					});
-				}
-
 				const booking_code = crypto.randomBytes(4).toString("hex").toUpperCase();
 
-				const total_price = flight.prices[0].price * totalPassengers;
+				const total_price = flight.prices[0].price * (totalPassengers - infant);
 				const tax = Math.round(total_price * 10/100);
 
 				const newOrder = await Order.create({
@@ -319,6 +308,7 @@ module.exports = {
 				);
 
 				return {
+					id: newOrder.id,
 					flight_id: newOrder.flight_id,
 					booking_code: newOrder.booking_code,
 					seat_class: newOrder.seat_type,
@@ -327,8 +317,6 @@ module.exports = {
 					tax: convert.NumberToCurrency(newOrder.tax),
 					status: newOrder.status,
 					paid_before: newOrder.paid_before,
-					createdAt: newOrder.createdAt,
-					updatedAt: newOrder.updatedAt,
 				};
 			});
 

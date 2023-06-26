@@ -23,13 +23,6 @@ module.exports = {
 	search: async (req, res, next ) => {
 		try {
 			const { city } = req.body;
-			if (!city) {
-				return res.status(400).json({
-					status: false,
-					message: "missing request body",
-					data: null
-				});
-			}
 
 			const byCity = await Airport.findOne({
 				where: { city: convert.capitalFirstLetter(city) },
