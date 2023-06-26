@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const {isOrderExist} = require("./existence");
+const respone = require("../../utils/respone");
 
 const options = {
 	abortEarly: false,
@@ -13,13 +14,6 @@ const options = {
 	convert: false
 };
 
-const responeError = (res, error) => {
-	return res.status(400).json({
-		status: false,
-		message: `Validation error: ${error.details.map(x => x.message).join(", ")}`,
-		data: null
-	});
-};
 
 module.exports = {
 	confirmPayment: async (req, res, next) => {
@@ -32,7 +26,7 @@ module.exports = {
 			req.body = await schema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
-			responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	}
 };

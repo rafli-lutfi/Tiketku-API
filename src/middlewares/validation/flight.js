@@ -2,6 +2,7 @@ const Joi = require("joi");
 const moment = require("moment-timezone");
 const {TZ = "Asia/Jakarta"} = process.env;
 const {isFlightExist, isDepartureAirportExist, isArrivalAirportExist} = require("./existence");
+const respone = require("../../utils/respone");
 
 const options = {
 	abortEarly: false,
@@ -13,14 +14,6 @@ const options = {
 		}
 	},
 	convert: false
-};
-
-const responeError = (res, error) => {
-	return res.status(400).json({
-		status: false,
-		message: `Validation error: ${error.details.map(x => x.message).join(", ")}`,
-		data: null
-	});
 };
 
 const dateNow = moment().tz(TZ).format("YYYY-MM-DD");
@@ -57,7 +50,7 @@ module.exports = {
 
 			date: Joi.date().min(dateNow).required().
 				options({convert: true}).
-				messages({"date.min": `date must be greater than or equal to ${dateNow}`}), 
+				messages({"date.min": "The selected date has already passed"}), 
 
 			seat_class: Joi.string().min(1).valid(...validSeatClass).required(), 
 
@@ -73,7 +66,7 @@ module.exports = {
 			req.body = await bodySchema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
-			responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	},
 
@@ -96,7 +89,7 @@ module.exports = {
 			req.body = await schema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
-			responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	}
 };
