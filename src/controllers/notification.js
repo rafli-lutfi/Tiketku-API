@@ -1,4 +1,5 @@
 const {Notification} = require("../db/models");
+const respone = require("../utils/respone");
 
 module.exports = {
 	index: async (req, res, next) => {
@@ -17,11 +18,7 @@ module.exports = {
 				},
 			},);
 
-			return res.status(200).json({
-				status: true,
-				message: "Success",
-				data: notifications
-			});
+			return respone.successOK(res, "success", notifications);
 
 		} catch (error){
 			next(error);
@@ -33,11 +30,7 @@ module.exports = {
 			const {id} = req.params;
 			await Notification.update({is_read: true}, {where: {id, user_id: req.user.id}});
 
-			return res.status(200).json({
-				status: true,
-				message: "success",
-				data: null
-			});
+			return respone.successOK(res, "success");
 		} catch (error) {
 			next(error);
 		}
@@ -59,11 +52,8 @@ module.exports = {
 				},
 			},);
 
-			return res.status(200).json({
-				status: true,
-				message: "Success",
-				data: unRead
-			});
+			return respone.successOK(res, "success", unRead);
+
 		} catch (error) {
 			next(error);
 		}

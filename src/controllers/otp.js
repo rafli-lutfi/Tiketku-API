@@ -4,6 +4,7 @@ const {User} = require("../db/models");
 const {JWT_SECRET_KEY} = process.env;
 const mail = require("../utils/mail");
 const otp = require("../utils/otp");
+const respone = require("../utils/respone");
 
 module.exports = {
 	resendEmailVerfication: async (req, res, next) => {
@@ -14,11 +15,7 @@ module.exports = {
 			jwt.verify(token, JWT_SECRET_KEY, async (err) => {
 				if(err){
 					if(err.name != "TokenExpiredError"){
-						return res.status(401).json({
-							status: false,
-							message: err.message,
-							data: null,
-						});	
+						return respone.errorUnauthorized(res, err.name, err.message);	
 					}
 				}
 
@@ -35,14 +32,9 @@ module.exports = {
 				const url = `${req.protocol}://${req.get("host")}/register/verifyAccount?token=${token}`;
 
 				mail.sendEmailVerification({fullname: user.fullname, email: user.email, otp: otpCode, url});
-				return res.status(200).json({
-					status: false,
-					message: "success resend email",
-					data: {
-						email: user.email,
-						token
-					}
-				});
+
+				return respone.successOK(res, "success resend email", {email, token});
+				
 			});
 		} catch (error) {
 			next(error);
@@ -55,62 +47,36 @@ module.exports = {
 
 			const data = jwt.verify(token, JWT_SECRET_KEY);
 			if(!data.email || !data.otp){
-				return res.status(401).json({
-					status: false,
-					message: "invalid token",
-					data: null
-				});
+				return respone.errorUnauthorized(res, "invalid token");
 			}
 
 			const user = await User.findOne({where: {email: data.email}});
 
 			if (user.email_verified == true){
-				return res.status(400).json({
-					status: false,
-					message: "user already verify",
-					data: null
-				});
+				return respone.errorBadRequest(res, "user already verify");
 			}
 
 			const {otp} = req.body;
 			if(!otp) {
-				return res.status(400).json({
-					status: false,
-					message: "missing otp input",
-					data: null
-				});
+				return respone.errorBadRequest(res, "missing otp input");
 			}
 
+			// check otp input and otp in token
 			if (otp != data.otp){
-				return res.status(400).json({
-					status: false,
-					message: "invalid otp",
-					data: null
-				});
+				return respone.errorBadRequest(res, "invalid otp", "otp not matched");
 			}
 
 			const updated = await User.update({email_verified: true},{where: {email: data.email}});
 
 			if(updated[0] == 0){
-				return res.status(400).json({
-					status: false,
-					message: "verify account failed",
-					data: null
-				});
+				return respone.errorBadRequest(res, "verify account failed");
 			}
 
-			return res.status(200).json({
-				status: true,
-				message: "verify account success, now you can login with this email",
-				data: null
-			});
+			return respone.successOK(res, "verify account success, now you can login with this email");
+
 		} catch (error) {
 			if(error.name == "TokenExpiredError"){
-				return res.status(401).json({
-					status: false,
-					message: "token expired",
-					data: null,
-				});
+				return respone.errorBadRequest(res, "jwt expired", "jwt expired");
 			}
 			next(error);
 		}
@@ -127,18 +93,11 @@ module.exports = {
 			
 			await User.update({password: hashPassword}, {where: {email: data.email}});
 
-			return res.status(200).json({
-				status: true,
-				message: "success reset password",
-				data: null
-			});
+			return respone.successOK(res, "success reset password");
+
 		} catch (error) {
 			if(error.name == "TokenExpiredError"){
-				return res.status(401).json({
-					status: false,
-					message: error.message,
-					data: null
-				});
+				return respone.errorUnauthorized(res, "jwt expired", "jwt expired");
 			}
 			next(error);
 		}

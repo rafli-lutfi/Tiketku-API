@@ -3,6 +3,7 @@ const {Op} = require("sequelize");
 const convert = require("../utils/convert");
 const moment = require("moment-timezone");
 const {TZ = "Asia/Jakarta"} = process.env; 
+const respone = require("../utils/respone");
 
 module.exports = {
 	search: async (req, res, next) => {
@@ -23,6 +24,7 @@ module.exports = {
 				sort = [sort_by, sort_type];
 			}
 
+			// Check the existence of airports id
 			const departureAirport = await Airport.findOne({
 				where: {city: convert.capitalFirstLetter(departure_airport_city)},
 				attributes: ["id"]
@@ -158,19 +160,18 @@ module.exports = {
 			// remove null value from array
 			const filter = result.filter(Boolean);
 
-			return res.status(200).json({
-				status: true,
-				message: "success search flight",
-				data: {
-					item_count: filter.length,
-					passengers: {
-						adult,
-						child,
-						infant
-					},
-					flights: filter.length == 0 ? null : filter,
-				}
-			});
+			const data = {
+				item_count: filter.length,
+				passengers: {
+					adult,
+					child,
+					infant
+				},
+				flights: filter.length == 0 ? null : filter,
+			};
+
+			respone.successOK(res, "success search flight", data);
+			
 		} catch (error) {
 			next(error);
 		}
@@ -229,13 +230,11 @@ module.exports = {
 				}
 			});
 
-			if(!price){
-				return res.status(400).json({
-					status: false,
-					message: "price not found", 
-					data: null
-				});
-			}
+			if(!price) return respone.errorBadRequest(
+				res, 
+				"price not found", 
+				`flight id ${flight_id} with seat type ${seat_class} not found`
+			);
 
 			const tax = Math.round((price.price * (adult + child)) * 10/100);
 			const total_price = price.price * (adult + child) + tax;
@@ -273,11 +272,7 @@ module.exports = {
 				}
 			};
 
-			return res.status(200).json({
-				status: true,
-				message: "success get detail flight",
-				data: result
-			});
+			return respone.successOK(res, "success get detail flight", result);
 	
 		} catch (err) {
 			next(err);
