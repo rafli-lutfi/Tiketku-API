@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const {isFlightExist} = require("./existence");
+const respone = require("../../utils/respone");
 
 const options = {
 	abortEarly: false,
@@ -13,13 +14,6 @@ const options = {
 	convert: false
 };
 
-const responeError = (res, error) => {
-	return res.status(400).json({
-		status: false,
-		message: `Validation error: ${error.details.map(x => x.message).join(", ")}`,
-		data: null
-	});
-};
 
 const validSeatClass = ["ECONOMY", "BUSSINESS", "FIRST CLASS"];
 const validAgeGroup = ["adult", "child", "infant"];
@@ -35,7 +29,7 @@ module.exports = {
 			req.params = await schema.validateAsync(req.params, options);    
 			next();
 		} catch (error) {
-			return responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	},
 
@@ -70,7 +64,7 @@ module.exports = {
 
 			next();
 		} catch (error) {
-			return responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	}
 };

@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const {isEmailVerified} = require("./existence");
+const respone = require("../../utils/respone");
 
 const options = {
 	abortEarly: false,
@@ -12,13 +13,6 @@ const options = {
 	}
 };
 
-const responeError = (res, error) => {
-	return res.status(400).json({
-		status: false,
-		message: `Validation error: ${error.details.map(x => x.message).join(", ")}`,
-		data: null
-	});
-};
 
 module.exports = {
 	resendEmailVerification: async (req, res, next) => {
@@ -38,7 +32,7 @@ module.exports = {
 			req.body = await bodySchema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
-			responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	},
 
@@ -51,7 +45,7 @@ module.exports = {
 			req.query = await schema.validateAsync(req.query, options);
 			next();
 		} catch (error) {
-			responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	},
 
@@ -72,7 +66,7 @@ module.exports = {
 			req.body = await bodySchema.validateAsync(req.body, options);
 			next();
 		} catch (error) {
-			responeError(res, error);
+			return respone.errorJoiValidation(res, error);
 		}
 	},
 };

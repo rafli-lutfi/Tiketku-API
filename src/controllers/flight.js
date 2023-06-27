@@ -168,7 +168,7 @@ module.exports = {
 						child,
 						infant
 					},
-					flights: filter,
+					flights: filter.length == 0 ? null : filter,
 				}
 			});
 		} catch (error) {
