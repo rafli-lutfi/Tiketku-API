@@ -44,6 +44,12 @@ module.exports = {
 				"Notification not found."
 			);
 
+			if (notification.is_read == true) return respone.errorBadRequest(
+				res, 
+				"Invalid request", 
+				"Notification already marked as read."
+			);
+			
 			await Notification.update({is_read: true}, {where: {id, user_id: req.user.id}});
 
 			return respone.successOK(res, "success");
