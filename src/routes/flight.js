@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { flight } = require("../controllers");
-const flightValidation = require("../middlewares/validation/flight");
+const {detail, search} = require("../middlewares/validation/flight");
+const validate = require("../middlewares/validate");
 
-router.post("/search", flightValidation.search, flight.search);
-router.post("/detail", flightValidation.detail, flight.detail);
+router.post("/search", validate(search), flight.search);
+router.post("/detail", validate(detail), flight.detail);
 
 module.exports = router;
 

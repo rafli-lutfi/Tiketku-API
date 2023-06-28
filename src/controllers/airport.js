@@ -1,5 +1,6 @@
 const {Airport, Flight, Order, sequelize} =require("../db/models");
 const convert = require("../utils/convert");
+const respone = require("../utils/respone");
 
 module.exports = {
 	getAll: async (req, res, next) => {
@@ -29,19 +30,14 @@ module.exports = {
 				attributes: { exclude: ["createdAt", "updatedAt"] }
 			});
 
-			if (!byCity) {
-				return res.status(400).json({
-					status: false,
-					message: "Airport not found",
-					data: null
-				});
-			}
+			if (!byCity) return respone.errorBadRequest(
+				res, 
+				"airports not found", 
+				`airports with city name ${city} not found`
+			);
 
-			return res.status(200).json({
-				status: true,
-				message: "Success",
-				data: byCity
-			});
+			return respone.successOK(res, "success", byCity)
+			;
 		} catch (error) { 
 			next(error);
 			
@@ -81,11 +77,10 @@ module.exports = {
 				attributes: []
 			});
 
-			return res.status(200).json({
-				status: true,
-				message: "success get favorite destination",
-				data: destinations.map(flight => flight.arrival_airport)
-			});
+			const data = destinations.map(flight => flight.arrival_airport);
+
+			return respone.successOK(res, "success get favorite destination", data);
+
 		} catch (error) {
 			next(error);
 		}

@@ -1,6 +1,7 @@
 const {Order, Payment, } = require("../db/models");
 const moment = require("moment-timezone");
 const convert = require("../utils/convert");
+const respone = require("../utils/respone");
 
 module.exports = {
 	confirmPayment: async (req,res,next) => {
@@ -46,11 +47,7 @@ module.exports = {
 
 			await Order.update({status: "PAID"}, {where: {id: order_id}});
 
-			return res.status(201).json({
-				status: true,
-				message: "payment success",
-				data: null
-			});
+			return respone.successOK(res, "payment success");
 		} catch (error) {
 			next(error);
 		}

@@ -1,4 +1,5 @@
 module.exports = {
+	// 200 OK
 	successOK: (res, message, data = null) => {
 		return res.status(200).json({
 			status: true,
@@ -7,6 +8,7 @@ module.exports = {
 		});
 	},
 
+	// 201 CREATED
 	successCreated: (res, message, data = null) => {
 		return res.status(200).json({
 			status: true,
@@ -25,9 +27,19 @@ module.exports = {
 		});
 	},
 
+	// 400 BAD REQUEST
 	errorBadRequest: (res, error, detail = null) => {
 		return res.status(400).json({
 			status: false,
+			message: error,
+			error: detail
+		});
+	},
+
+	// 401 UNAUTHORIZED
+	errorUnauthorized: (res, error, detail = null) => {
+		return res.status(401).json({
+			status: false, 
 			message: error,
 			error: detail
 		});
