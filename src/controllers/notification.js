@@ -28,6 +28,22 @@ module.exports = {
 	readNotif: async (req, res, next) => {
 		try {
 			const {id} = req.params;
+
+			if(!id) return respone.errorBadRequest(
+				res, 
+				"Invalid requestd", 
+				"Missing id parameter."
+			);
+
+			const notification = await Notification.findOne({
+				where: { id, user_id: req.user.id }
+			});
+
+			if(!notification) return respone.errorBadRequest(
+				res, 
+				"Notification not found."
+			);
+
 			await Notification.update({is_read: true}, {where: {id, user_id: req.user.id}});
 
 			return respone.successOK(res, "success");
