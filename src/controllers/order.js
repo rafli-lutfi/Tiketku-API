@@ -3,6 +3,7 @@ const moment = require("moment-timezone");
 const crypto = require("crypto");
 const notif = require("../utils/notifications");
 const convert = require("../utils/convert");
+const respone = require("../utils/respone");
 
 module.exports = {
 	getAll: async (req, res, next) => {
@@ -67,11 +68,8 @@ module.exports = {
 				};
 			});
 
-			return res.status(200).json({
-				status: true,
-				message: "success get all order",
-				data: result
-			});
+			return respone.successOK(res, "success get all order", result);
+
 		} catch (error) {
 			next(error);
 		}
@@ -139,14 +137,10 @@ module.exports = {
 				},
 			});
 
-			if(!order){
-				return res.status(403).json({
-					status: false,
-					message: "order not found, please input the correct id",
-					data: null
-				});
-			}
+			if(!order) return respone.errorBadRequest(res, "order not found", `order with id ${order_id} not found`);
 
+			// check payment status is it PAID or not
+			// if PAID, return payment type 
 			let paymentType;
 			if(order.status == "PAID"){
 				const payment = await Payment.findOne({
@@ -163,8 +157,8 @@ module.exports = {
 				where: {flight_id: order.flight.id, seat_type: order.seat_type},
 			});
 
+			// count age group in passengers data
 			let adult = 0, child = 0, infant = 0;
-
 			const passengers = order.passengers.map(passenger => {
 				if (passenger.age_group == "adult") adult++;
 				if (passenger.age_group == "child") child++;
@@ -172,17 +166,19 @@ module.exports = {
 				return {
 					title: passenger.title,
 					fullname: passenger.fullname,
-					id: passenger.ktp
+					ktp: passenger.ktp
 				};
 			});
 
-			const paid_before = convert.databaseToDateFormat(order.paid_before);
+			// if the order has not been paid, show paid_before value
+			let paid_before = convert.databaseToDateFormat(order.paid_before);
+			paid_before = moment().isAfter(paid_before) || order.status != "UNPAID" ? null : paid_before;
 
 			const result = {
 				booking_code: order.booking_code,
 				status: order.status,
 				payment_type: paymentType ? paymentType : null,
-				paid_before: moment().isAfter(paid_before) || order.status != "UNPAID" ? null : paid_before,
+				paid_before,
 				flight_detail:{
 					departure:{
 						airport_name: order.flight.departure_airport.name,
@@ -218,11 +214,8 @@ module.exports = {
 				}
 			};
 
-			return res.status(200).json({
-				status: true,
-				message: "success get detail order",
-				data: result
-			});
+			return respone.successOK(res, "success get detail order", result);
+
 		} catch (error) {
 			next(error);
 		}
@@ -240,19 +233,17 @@ module.exports = {
 				seat_class
 			} = req.body;
 
-			if (!id) return res.status(400).json({
-				status: false,
-				message: "missing user_id",
-				data: null
-			});
+			if (!id) return respone.errorBadRequest(res, "missing user id");
 
 			const totalPassengers = adult + child + infant;
 
-			if (passengers.length != totalPassengers) return res.status(400).json({
-				status: false,
-				message: `mismatched, total passenger is ${totalPassengers} but total passenger data is ${passengers.length}`,
-				data: null
-			});
+			if (passengers.length != totalPassengers) {
+				return respone.errorBadRequest(
+					res, 
+					"mismatched data", 
+					`total passenger is ${totalPassengers} but total passenger data is ${passengers.length}`
+				);
+			}
 
 			const result = await sequelize.transaction(async (t) => {
 				const flight = await Flight.findByPk(flight_id, {
@@ -328,11 +319,7 @@ module.exports = {
 
 			notif.sendNotif(notifData);
 
-			return res.status(201).json({
-				status: true,
-				message: "success create new order",
-				data: result
-			});
+			return respone.successCreated(res, "success create new order", result);
 		} catch (error) {
 			next(error);
 		}
