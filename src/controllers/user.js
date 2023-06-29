@@ -217,7 +217,7 @@ module.exports = {
 				await mail.sendForgotPassword({email:user.email, url});
 			}
 
-			return respone.successOK(res, "we will send an email if the email is registered", {token});
+			return respone.successOK(res, "we will send an email if the email is registered", null);
 
 		} catch (error) {
 			next(error);
