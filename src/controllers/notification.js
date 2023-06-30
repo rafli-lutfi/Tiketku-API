@@ -31,7 +31,7 @@ module.exports = {
 
 			if(!id) return respone.errorBadRequest(
 				res, 
-				"Invalid requestd", 
+				"Invalid request", 
 				"Missing id parameter."
 			);
 
@@ -44,10 +44,9 @@ module.exports = {
 				"Notification not found."
 			);
 
-			if (notification.is_read == true) return respone.errorBadRequest(
+			if (notification.is_read == true) return respone.successOK(
 				res, 
-				"Invalid request", 
-				"Notification already marked as read."
+				"notification already been read", 
 			);
 			
 			await Notification.update({is_read: true}, {where: {id, user_id: req.user.id}});

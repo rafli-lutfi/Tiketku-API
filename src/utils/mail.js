@@ -24,5 +24,13 @@ module.exports = {
 				return reject(error);
 			}
 		});
+	},
+	sendInvoice: async (data) => {
+		try {
+			const templateEmail = await ejs.renderFile(path.join(templateDirectory, "invoice.ejs"), data);
+			await nodemailer.sendMail(data.user.email, "Invoice", templateEmail);
+		} catch (error) {
+			console.error(error);
+		}
 	}
 };

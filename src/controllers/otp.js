@@ -20,6 +20,9 @@ module.exports = {
 				}
 
 				const user = await User.findOne({where: {email: email}});
+				if(user.email_verified == true){
+					return respone.errorBadRequest(res, "user already verified");
+				}
 
 				const otpCode = otp.generateOTP();
 
