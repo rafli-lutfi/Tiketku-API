@@ -208,7 +208,7 @@ module.exports = {
 					infant_count: infant == 0 ? null: infant,
 					adult_price: convert.NumberToCurrency(adult * price.price),
 					child_price: child == 0 ? null : convert.NumberToCurrency(child * price.price),
-					infant_price: infant == 0 ? null : convert.NumberToCurrency(child * price.price),
+					infant_price: infant == 0 ? null : convert.NumberToCurrency(0),
 					tax: convert.NumberToCurrency(order.tax),
 					total_price: convert.NumberToCurrency(order.total_price + order.tax)
 				}
