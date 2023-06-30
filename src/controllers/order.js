@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const notif = require("../utils/notifications");
 const convert = require("../utils/convert");
 const respone = require("../utils/respone");
+const {TZ = "Asia/Jakarta"} = process.env;
 
 module.exports = {
 	getAll: async (req, res, next) => {
@@ -183,13 +184,13 @@ module.exports = {
 					departure:{
 						airport_name: order.flight.departure_airport.name,
 						city: order.flight.departure_airport.city,
-						date: order.flight.date,
+						date: moment(order.flight.date).tz(TZ).format("dddd DD MMMM YYYY"),
 						time: convert.timeWithTimeZone(order.flight.departure_time),
 					},
 					arrival:{
 						airport_name: order.flight.arrival_airport.name,
 						city: order.flight.arrival_airport.city,
-						date: order.flight.date,
+						date: moment(order.flight.date).tz(TZ).format("dddd DD MMMM YYYY"),
 						time: convert.timeWithTimeZone(order.flight.arrival_time),
 					},
 					airplane: {
