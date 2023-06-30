@@ -7,6 +7,7 @@ const flight = require("./flight");
 const notif = require("./notification");
 const order = require("./order");
 const payment = require("./payment");
+const country = require("./country");
 
 
-module.exports = { user, uploadFile, otp , airline, airport, flight, notif, order, payment};
+module.exports = { user, uploadFile, otp , airline, airport, flight, notif, order, payment, country};

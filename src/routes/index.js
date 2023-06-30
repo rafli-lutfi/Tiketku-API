@@ -6,6 +6,7 @@ const flight = require("./flight");
 const order = require("./order");
 const notif = require("./notification");
 const payment = require("./payment");
+const country = require("./country");
 
 
 
@@ -22,7 +23,7 @@ router.use("/airline", airline);
 router.use("/airport", airport);
 router.use("/flight", flight);
 router.use("/order", order);
-
+router.use("/country", country);
 router.use("/notif", notif);
 router.use("/payment", payment);
 
