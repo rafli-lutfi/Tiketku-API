@@ -4,7 +4,7 @@ const moment = require("moment")
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    const {flights: rawFlights} = require("./data/data.json")
+    const {flights: rawFlights} = require("./data/June-Dec-2023.json")
 
     const flights = rawFlights.map(flight => {
       return {

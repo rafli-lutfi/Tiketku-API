@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { flight } = require("../controllers");
+const {detail, search} = require("../middlewares/validation/flight");
+const validate = require("../middlewares/validate");
 
-
-router.get("/", flight.getAll);
-router.post("/", flight.create);
-router.post("/search", flight.search);
+router.post("/search", validate(search), flight.search);
+router.post("/detail", validate(detail), flight.detail);
 
 module.exports = router;
 

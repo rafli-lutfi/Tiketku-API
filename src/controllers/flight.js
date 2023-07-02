@@ -1,69 +1,50 @@
-const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price} = require("../db/models");
+const {Flight, Airplane, Airport, Airline, AirplaneSeatClass, Price, Order} = require("../db/models");
+const {Op} = require("sequelize");
 const convert = require("../utils/convert");
+const moment = require("moment-timezone");
+const {TZ = "Asia/Jakarta"} = process.env; 
+const respone = require("../utils/respone");
 
 module.exports = {
 	search: async (req, res, next) => {
 		try {
-			const {sort_by = "departure_time", sort_type = "ASC"} = req.query;
+			let {sort_by, sort_type, page, per_page} = req.query;
 
-			const {departure_airport_city, arrival_airport_city, date, seat_class} = req.body;
-			if(!departure_airport_city || !arrival_airport_city || !date || !seat_class) {
-				return res.status(400).json({
-					status: false,
-					message: "missing query parameter",
-					data: null
-				});
-			}
+			const offset = (page - 1) * per_page;
 
+			const {departure_airport_city, arrival_airport_city, date, seat_class, adult, child, infant} = req.body;
+
+			const totalPassengers = adult + child + infant;
+
+			// to sorting data flight purposes
 			let sort = [];
 			if(sort_by == "price"){
 				sort = ["prices", sort_by, sort_type];
 			}else{
-				sort =[sort_by, sort_type];
+				sort = [sort_by, sort_type];
 			}
 
+			// Check the existence of airports id
 			const departureAirport = await Airport.findOne({
 				where: {city: convert.capitalFirstLetter(departure_airport_city)},
 				attributes: ["id"]
 			});
-			if(!departureAirport) {
-				return res.status(400).json({
-					status: false,
-					message: "departure airport not found",
-					data: null
-				});
-			}
 
 			const arrivalAirport = await Airport.findOne({
 				where: {city: convert.capitalFirstLetter(arrival_airport_city)},
 				attributes: ["id"]
 			});
-			if(!arrivalAirport) {
-				return res.status(400).json({
-					status: false,
-					message: "departure airport not found",
-					data: null
-				});
-			}
 
-			const seatClass = await AirplaneSeatClass.findOne({
-				where: {seat_type: seat_class.toUpperCase()},
-				attributes: ["id"],
-			});
+			const time_now = convert.dateToDatabaseFormat(new Date());
 
-			if (!seatClass) {
-				return res.status(400).json({
-					status: false,
-					message: "seat class not found",
-					data: null
-				});			
-			}
-
-			const flights = await Flight.findAndCountAll({
+			const flights = await Flight.findAll({
 				where: {
 					departure_airport_id: departureAirport.id,
 					arrival_airport_id: arrivalAirport.id,
-					date: date
+					date: date,
+					departure_time: {
+						[Op.gt]: time_now
+					}
 				},
 				include: [
 					{
@@ -120,10 +101,22 @@ module.exports = {
 				attributes: {
 					exclude: ["createdAt", "updatedAt"]
 				},
-				order: [sort]
+				order: [sort],
+				limit: per_page,
+				offset: offset,
 			});
 
-			const result = flights.rows.map(flight => {
+			const result = await Promise.all( flights.map( async flight => {
+				const orders = await Order.findAll({
+					where: {flight_id: flight.id, seat_type: seat_class}
+				});
+
+				// compare total seat left with total passenger in order 
+				const seatLeft = flight.airplane.seat_classes[0].total_seat - orders.length;
+				if (seatLeft <= totalPassengers){
+					return;
+				}
+
 				const departure_time = convert.timeWithTimeZone(flight.departure_time);
 				const arrival_time = convert.timeWithTimeZone(flight.arrival_time);
 				const duration = convert.DurationToString(flight.duration);
@@ -162,113 +155,124 @@ module.exports = {
 					arrival_time,
 					duration,
 				};
-			});
+			}));
 
-			return res.status(200).json({
-				status: true,
-				message: "success search flight",
-				data: {
-					item_count: flights.count,
-					flights: result
-				}
-			});
+			// remove null value from array
+			const filter = result.filter(Boolean);
+
+			const data = {
+				item_count: filter.length,
+				passengers: {
+					adult,
+					child,
+					infant
+				},
+				flights: filter.length == 0 ? null : filter,
+			};
+
+			respone.successOK(res, "success search flight", data);
+			
 		} catch (error) {
 			next(error);
-		}
-	},
-
-	getAll: async (req, res, next) => {
-		try {
-			const flights = await Flight.findAll({flight: [["id", "ASC"]] });
-
-			return res.status(200).json({
-				status: true,
-				message: "success get all flight",
-				data: flights
-			});
-		} catch (error) {
-			next(error);
-		}
-	},
-
-	create: async (req, res, next) => {
-		try {
-			const {airplane_id, from_airport_id, to_airport_id, date, departure_time, arrival_time, estimation} = req.body;
-
-			if(!airplane_id || !from_airport_id || !to_airport_id || !date || !departure_time || !arrival_time || !estimation){
-				throw new Error("mising body request");
-			}
-
-			const checkAirplane = await Airplane.findAndCountAll({ where: { id: airplane_id } });
-
-			if (checkAirplane.count != airplane_id.length) {
-				throw new Error("there's airplane_id not found");
-			}
-
-			const checkFromAirport = await Airport.findAndCountAll({ where: { id: from_airport_id} });
-
-			if (checkFromAirport.count != from_airport_id.length) {
-				throw new Error("there's from_airport_id not found");
-			}
-
-			const checkToAirport = await Airport.findAndCountAll({ where: { id: to_airport_id} });
-
-			if (checkToAirport.count != to_airport_id.length) {
-				throw new Error("there's to_airport_id not found");
-			}
-
-			if (to_airport_id == from_airport_id){
-				throw new Error("airports are not the same");
-			}
-
-			const newFlight = await Flight.create({ airplane_id, from_airport_id, to_airport_id, date, departure_time, arrival_time, estimation });
-
-			return res.status(201).json({
-				status: true,
-				message: "success create new flight",
-				data: newFlight,
-			});
-		} catch (err) {
-			if (err.message == "missing body request" || err.message == "there's airplane_id not found" || err.message == "there's from_airport_id not found"  || err.message == "there's to_airport_id not found" || err.message == "airports are not the same") {
-				return res.status(400).json({
-					status: false,
-					message: err.message,
-					data: null,
-				});
-			}
-			next(err);
 		}
 	},
 
 	detail: async(req, res, next) => {
 		try {
-			const { flight_id } = req.params;
-		
-			if (!flight_id) {
-				throw new Error("missing paramater");
-			}
-		
-			const flight = await Flight.findOne({ where: { id: flight_id } });
-			if (!flight) {
-				throw new Error("flight not found");
-			}
+			const { flight_id, seat_class, adult, child, infant } = req.body;
 
-			const airplaneFlight = await Flight.findByPk(flight_id, {
+			const price = await Price.findOne({
+				where: {flight_id, seat_type: seat_class},
 				include: {
-					model: Airplane,
-					as: "airplane",
-					throught: {
-						attributes: [],
+					model: Flight, 
+					as: "flight_price",
+					include: [
+						{
+							model: Airplane,
+							as: "airplane",
+							include: {
+								model: Airline,
+								as: "airline",
+								attributes: {
+									exclude: ["id", "createdAt", "updatedAt"]
+								},
+								required: true,
+							},
+							attributes: {
+								exclude: ["createdAt", "updatedAt"]
+							},
+							required: true	
+						},
+						{
+							model: Airport,
+							as: "departure_airport",
+							attributes: {
+								exclude: ["createdAt", "updatedAt"]
+							},
+							required: true
+						},
+						{
+							model: Airport,
+							as: "arrival_airport",
+							attributes: {
+								exclude: ["createdAt", "updatedAt"]
+							},
+							required: true
+						},
+					],
+					attributes: {
+						exclude: ["createdAt", "updatedAt"]
 					},
+					required: true
 				},
-				order: [[{model: Airplane, as: "airplane"}, "id", "ASC"]]
+				attributes: {
+					exclude: ["createdAt", "updatedAt"]
+				}
 			});
-			
-			return res.status(200).json({
-				status: true,
-				message: "success get detail flight",
-				data: airplaneFlight
-			});
+
+			if(!price) return respone.errorBadRequest(
+				res, 
+				"price not found", 
+				`flight id ${flight_id} with seat type ${seat_class} not found`
+			);
+
+			const tax = Math.round((price.price * (adult + child)) * 10/100);
+			const total_price = price.price * (adult + child) + tax;
+
+			const result = {
+				info: {
+					airline_name: price.flight_price.airplane.airline.name,
+					seat_class: seat_class,
+					airplane_model: price.flight_price.airplane.model,
+					logo: price.flight_price.airplane.airline.logo,
+					free_baggage: price.flight_price.free_baggage,
+					cabin_baggage: price.flight_price.cabin_baggage,
+				},
+				departure: {
+					departure_time: convert.timeWithTimeZone(price.flight_price.departure_time),
+					date: moment(price.flight_price.date).tz(TZ).format("DD MMMM YYYY"),
+					airport_name: price.flight_price.departure_airport.name,
+					iata: price.flight_price.departure_airport.airport_iata,
+				}, 
+				arrival: {
+					arrival_time: convert.timeWithTimeZone(price.flight_price.arrival_time),
+					date: moment(price.flight_price.date).tz(TZ).format("DD MMMM YYYY"),
+					airport_name: price.flight_price.arrival_airport.name,
+					iata: price.flight_price.arrival_airport.airport_iata,
+				},
+				price: {
+					adult_count: adult,
+					adult_price: convert.NumberToCurrency(price.price * adult),
+					child_count: child,
+					child_price: child == 0 ? null : convert.NumberToCurrency(price.price * child),
+					infant_count: infant,
+					infant_price: child == 0 ? null : convert.NumberToCurrency(0),
+					total_price: convert.NumberToCurrency(total_price),
+					tax: convert.NumberToCurrency(tax),
+				}
+			};
+
+			return respone.successOK(res, "success get detail flight", result);
 	
 		} catch (err) {
 			next(err);

@@ -6,21 +6,13 @@ const otp = require("../utils/otp");
 const oauth = require("../config/oauth");
 const notif = require("../utils/notifications");
 const {JWT_SECRET_KEY} = process.env;
+const respone = require("../utils/respone");
 
 module.exports = {	
 	register: async (req, res, next) => {
 		// regiter user
 		try {
 			const {fullname, email, phone, password} = req.body;
-			const exist = await User.findOne({where: {email}, attributes: {exclude: ["createdAt", "updatedAt"]}});
-
-			if(exist) {
-				return res.status(400).json({
-					status: false,
-					messege: "email already used!",
-					data: null
-				});
-			}
 
 			const roleUser = await Role.findOne({where: {name: "USER"}, attributes: {exclude: ["createdAt", "updatedAt"]}});
 
@@ -46,19 +38,18 @@ module.exports = {
 				otp: otpCode
 			};
 			
-			const token = jwt.sign(payload, JWT_SECRET_KEY);
+			const token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "5m"});
 			const url = `${req.protocol}://${req.get("host")}/register/verifyAccount?token=${token}`;
 
 			mail.sendEmailVerification({fullname: user.fullname, email: user.email, otp: otpCode, url});
 
-			return res.status(201).json({
-				status: true,
-				messege: "user created!",
-				data: {
-					email: user.email,
-					verification_url: url,
-				}
-			});
+			const data = {
+				email: user.email,
+				token: token
+			};
+
+			return respone.successCreated(res, "user created!", data);
+
 		} catch(err){
 			next(err);
 		}
@@ -66,47 +57,37 @@ module.exports = {
 
 	login: async (req, res, next) => {
 		try {
-			const {email, phone, password} = req.body;
-
-			if (!password && (!email || !phone) ) {
-				return res.status(400).json({
-					status: false,
-					message: "missing body request",
-					data: null
-				});
-			}
+			const {email, password} = req.body;
 
 			const user = await User.findOne({
 				where: {email}, 
 				include: {
 					model: Role,
 					as: "role"				
+				},
+				attributes: {
+					exclude: ["createdAt", "updatedAt"]
 				}
 			});
 
 			if (!user) {
-				return res.status(400).json({
-					status: false,
-					message: "invalid credentials!",
-					data: null
-				});
+				return respone.errorBadRequest(res, "invalid credentials!", "wrong email or password");
+			}
+
+			if(user.user_type == "google"){
+				return respone.errorBadRequest(res, 
+					"account was registered using google, please login with google", 
+					"user try login without google, but registerd using google"
+				);
 			}
 
 			if(!user.email_verified){
-				return res.status(400).json({
-					status: false,
-					message: "your account is not verified, please check your email to verify",
-					data: null
-				});
+				return respone.errorBadRequest(res, "account is not verified", "user try login but email not verified yet");
 			}
 
 			const passwordCorrect = await bcrypt.compare(password, user.password);
 			if (!passwordCorrect) {
-				return res.status(400).json({
-					status: false,
-					message: "invalid credentials!",
-					data: null
-				});
+				return respone.errorBadRequest(res, "invalid credentials!", "wrong email or password");
 			}
 
 			const payload = {
@@ -126,13 +107,8 @@ module.exports = {
 			notif.sendNotif(notifData);
 
 			const token =  jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "1d"});
-			return res.status(200).json({
-				status: true,
-				message: "success!",
-				data: {
-					token: token
-				}
-			});
+			
+			return respone.successOK(res, "success!", {token});
 
 		} catch (err) {
 			next(err);
@@ -147,11 +123,9 @@ module.exports = {
 				return res.redirect(googleLoginUrl);
 			}
 
-        
 			await oauth.setCreadentials(code);
 			const {data} = await oauth.getUserData();
         
-			// return res.json(data);
 			let user = await User.findOne({where: {email: data.email}});
 			if (!user) {
 				user = await User.create({
@@ -163,7 +137,6 @@ module.exports = {
 					user_type: "google",
 				});
 			}
-
 
 			const payload = {
 				id: user.id,
@@ -180,13 +153,9 @@ module.exports = {
 			notif.sendNotif(notifData);
 
 			const token = await jwt.sign(payload, JWT_SECRET_KEY);
-			return res.status(200).json({
-				status: true,
-				message: "login success!",
-				data: {
-					token: token
-				}
-			});
+
+			return respone.successOK(res, "login success!", {token});
+
 		} catch (error) {
 			next(error);
 		}
@@ -195,43 +164,36 @@ module.exports = {
 	updateProfile: async (req, res, next) => {
 		try {
 			const {fullname, email, phone} = req.body;
-			let {avatar} = req.body;
 
+			let avatar;
 			if (req.uploadFile) {
 				avatar = req.uploadFile.imageUrl;
 			}
 
-			if(!fullname && !email && !phone && !avatar) {
-				return res.status(400).json({
-					status: false,
-					message: "missing body request",
-					data: null
-				});
+			if(!fullname && !email && !phone && !avatar){
+				return respone.errorBadRequest(
+					res, 
+					"missing body request", 
+					"One of these (emails, fullname, phone) must be filled in."
+				);
 			}
 
 			const {id: userId} = req.user;
 
 			const checkUser = User.findOne({where: {id: userId}});
-			if (!checkUser) {
-				return res.status(400).json({
-					status: false,
-					message: "user not found",
-					data : null
-				});
-			}
+			if (!checkUser) return respone.errorBadRequest(res, "user not found", `user with id ${userId} not found`);
 
 			await User.update({fullname, email, phone, avatar}, {where: {id: userId}});
 
-			return res.status(200).json({
-				status: true,
-				message: "success update profile",
-				data: {
-					fullname,
-					email,
-					phone,
-					avatar
-				}
-			});
+			const data = {
+				fullname,
+				email,
+				phone,
+				avatar
+			};
+
+			return respone.successOK(res, "success update profile", data);
+
 		} catch (error) {
 			next(error);
 		}
@@ -242,59 +204,45 @@ module.exports = {
 			const {email} = req.body;
 
 			const user = await User.findOne({where: {email}, attributes: {exclude : ["createdAt", "updatedAt"]}});
+			let token;
+
 			if(user){
 				const payload = {
 					email: user.email
 				};
 				
-				const token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "5m"});
+				token = jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "10m"});
 				const url = `${req.protocol}://${req.get("host")}/user/resetPassword?token=${token}`;
 
 				await mail.sendForgotPassword({email:user.email, url});
 			}
 
-			return res.status(200).json({
-				status: true,
-				message: "we will send a email if the email is registered!",
-				data: null
-			});
+			return respone.successOK(res, "we will send an email if the email is registered", {token: token ? token : null});
+
 		} catch (error) {
 			next(error);
 		}
 	},
+	
 	getDetail: async (req, res, next) => {
 		try {
-			const {id} = req.params;
+			const {id} = req.user;
 			if (!id) {
-				return res.status(400).json({
-					status: false,
-					message: "missing id parameter",
-					data: null
-				});
+				return respone.errorBadRequest(res, "missing user id");
 			}
 
 			const detailUser = await User.findOne({
 				where: {id}, 
-				attributes: 
-					["fullname", "email", "phone"]
-				,
-				
+				attributes: ["fullname", "email", "phone", "avatar"],
 				required: true
 			});
 
 			if (!detailUser) {
-				return res.status(400).json({
-					status: false,
-					message: "user not found",
-					data: null
-				});
+				return respone.errorBadRequest(res, "user not found", `user with id ${id} not found`);
 			}
 
-			return res.status(200).json({
-				status: true,
-				message: "success get detail user",
-				data: detailUser
-			});
+			return respone.successOK(res, "success get detail user", detailUser);
+
 		} catch (error) {
 			next(error);
 		}

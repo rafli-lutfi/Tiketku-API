@@ -44,6 +44,30 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
+      {		
+        name: "Jalaluddin",
+        city: 'Gorontalo',
+        country: "Indonesia",
+        airport_iata: "GTO",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {	
+        name: "Sultan Mahmud Badaruddin II",
+        city: 'Palembang',
+        country: "Indonesia",
+        airport_iata: "PLM",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        name: "Lombok Praya International Airport",
+        city: 'Lombok',
+        country: "Indonesia",
+        airport_iata: "LOP",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
     ], {});
   },
 

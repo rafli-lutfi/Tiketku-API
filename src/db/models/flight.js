@@ -32,6 +32,25 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Flight',
+    indexes: [
+      {
+        name: "flights_departure_airport_id_idx",
+        fields: ['departure_airport_id']
+      },
+      {
+        name: "flights_arrival_airport_id_idx",
+        fields: ['arrival_airport_id']
+      },
+      {
+        name: "flights_date_idx",
+        fields: ['date']
+      },
+      {
+        name: "flights_departure_time_idx",
+        fields: ['departure_time']
+      },
+    ],
   });
+  Flight.add
   return Flight;
 };
