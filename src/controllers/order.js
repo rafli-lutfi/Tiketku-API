@@ -176,6 +176,7 @@ module.exports = {
 			paid_before = moment().isAfter(paid_before) || order.status != "UNPAID" ? null : paid_before;
 
 			const result = {
+				id: order.id,
 				booking_code: order.booking_code,
 				status: order.status,
 				payment_type: paymentType ? paymentType : null,
