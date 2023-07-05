@@ -1,4 +1,4 @@
-const {Airport, Flight, Order, sequelize} =require("../db/models");
+const {Airport, sequelize} = require("../db/models");
 const convert = require("../utils/convert");
 const respone = require("../utils/respone");
 
@@ -46,40 +46,32 @@ module.exports = {
 
 	favoriteDestination: async (req, res, next) => {
 		try {
-			// look for the 5 highest number of orders by flight id.
-			const orders = await Order.findAll({
-				where: {status: "PAID"},
-				attributes: [
-					[sequelize.fn("COUNT", sequelize.col("flight_id")), "jumlah_flight"],
-					"flight_id"
-				],
-				group: ["flight_id", "id"],
-				order: [["jumlah_flight", "DESC"], ["flight_id", "ASC"]] ,
-				limit: 5
-			});
+			// look for the 5 highest number of orders and find where is the destination
+			const result = await sequelize.query(
+				`SELECT distinct  
+				"arrival_airport"."id" as "id", 
+				"arrival_airport"."city" AS "city",
+				"arrival_airport"."name" AS "name",
+				"arrival_airport"."country" AS "country",
+				"arrival_airport"."airport_iata" as "airport_iata",
+				COUNT ("flight_id") AS "jumlah_flight"
+				FROM "Orders" AS "Order"
+				INNER JOIN "Flights" AS "flight"
+				ON "Order"."flight_id" = "flight"."id"
+					inner join "Airports" as "arrival_airport"
+					on "flight"."arrival_airport_id" = "arrival_airport"."id"
+				WHERE "Order"."status" = 'PAID' 
+					GROUP BY 
+						"arrival_airport"."id",
+						"arrival_airport"."city",
+						"arrival_airport"."name",
+						"arrival_airport"."country",
+						"arrival_airport"."airport_iata"
+					ORDER BY "jumlah_flight" desc
+					LIMIT 5;`
+			);
 
-			const flight_ids = [];
-
-			orders.forEach(order => {
-				flight_ids.push(order.flight_id);
-			});
-
-			// look for the arrival airport(equal to destination) through the flight table.
-			const destinations = await Flight.findAll({
-				where: {id: flight_ids},
-				include: {
-					model: Airport,
-					as: "arrival_airport",
-					attributes: {
-						exclude: ["createdAt", "updatedAt"]
-					} 
-				},
-				attributes: []
-			});
-
-			const data = destinations.map(flight => flight.arrival_airport);
-
-			return respone.successOK(res, "success get favorite destination", data);
+			return respone.successOK(res, "success get favorite destination", result[0]);
 
 		} catch (error) {
 			next(error);
