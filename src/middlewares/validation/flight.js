@@ -6,7 +6,7 @@ const {isFlightExist, isDepartureAirportExist, isArrivalAirportExist} = require(
 const dateNow = moment().tz(TZ).format("YYYY-MM-DD");
 const validSortBy = ["departure_time", "price", "arrival_time", "duration"];
 const validSortType = ["ASC", "DESC"];
-const validSeatClass = ["ECONOMY", "BUSSINESS", "FIRST CLASS"];
+const validSeatClass = ["ECONOMY", "BUSINESS", "FIRST CLASS"];
 
 module.exports = {
 	search: {

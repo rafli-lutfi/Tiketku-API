@@ -13,7 +13,7 @@ module.exports = {
       },
       {
         airplane_id: 1,
-        seat_type: "BUSSINESS",
+        seat_type: "BUSINESS",
         total_seat: 32,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -27,7 +27,7 @@ module.exports = {
       },
       {
         airplane_id: 2,
-        seat_type: "BUSSINESS",
+        seat_type: "BUSINESS",
         total_seat: 32,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -41,7 +41,7 @@ module.exports = {
       },
       {
         airplane_id: 3,
-        seat_type: "BUSSINESS",
+        seat_type: "BUSINESS",
         total_seat: 26,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -97,7 +97,7 @@ module.exports = {
       },
       {
         airplane_id: 10,
-        seat_type: "BUSSINESS",
+        seat_type: "BUSINESS",
         total_seat: 30,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -111,7 +111,7 @@ module.exports = {
       },
       {
         airplane_id: 11,
-        seat_type: "BUSSINESS",
+        seat_type: "BUSINESS",
         total_seat: 50,
         createdAt: new Date(),
         updatedAt: new Date(),

@@ -1,7 +1,7 @@
 const Joi = require("joi");
 const {isFlightExist} = require("./existence");
 
-const validSeatClass = ["ECONOMY", "BUSSINESS", "FIRST CLASS"];
+const validSeatClass = ["ECONOMY", "BUSINESS", "FIRST CLASS"];
 const validAgeGroup = ["adult", "child", "infant"];
 const validTitle = ["mr", "mrs"];
 
