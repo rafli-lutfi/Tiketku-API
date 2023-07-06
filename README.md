@@ -11,7 +11,8 @@
 3. Muhammad Hafizh Ridho
 
 ### Link API
-[Railway Tiketku](https://tiketku.up.railway.app/)
+[Tiketku Production](https://tiketgw-production.up.railway.app/)
+[Tiketku Development](https://tiketku-develop.up.railway.app/)
 
 ### API Documentation
 [Tikteku API Docuemntation](https://personal1234.stoplight.io/docs/tiketku-api) 
